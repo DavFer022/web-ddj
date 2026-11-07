@@ -23,6 +23,16 @@ Ejecuta la aplicación:
 dotnet run --project src/SistemaDDJ.Web
 ```
 
+## Pruebas
+
+Ejecuta la suite con:
+
+```sh
+dotnet test SistemaDDJ.sln
+```
+
+Las pruebas están en `tests/SistemaDDJ.Tests`. Las pruebas de integración que requieran PostgreSQL deben usar una base de datos de prueba aislada.
+
 ## Base de datos
 
 El proyecto usa EF Core con el proveedor Npgsql y `AppDbContext`. Cuando se agreguen las primeras entidades, crear una migración con:

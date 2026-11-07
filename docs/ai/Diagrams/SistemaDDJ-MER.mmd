@@ -1,0 +1,217 @@
+erDiagram
+    USUARIO {
+        uuid id PK
+        varchar correo UK
+        varchar nombre_visible
+        boolean activo
+        timestamptz creado_en
+    }
+
+    ROL {
+        uuid id PK
+        varchar nombre UK
+    }
+
+    USUARIO_ROL {
+        uuid usuario_id PK, FK
+        uuid rol_id PK, FK
+    }
+
+    CLIENTE {
+        uuid id PK
+        varchar nombre
+        varchar apellido
+        varchar correo
+        varchar telefono
+        boolean activo
+        timestamptz creado_en
+    }
+
+    CATEGORIA_ARTICULO {
+        uuid id PK
+        varchar nombre UK
+        text descripcion
+        boolean activo
+    }
+
+    ARTICULO {
+        uuid id PK
+        varchar codigo UK
+        varchar nombre
+        varchar unidad
+        varchar tipo
+        numeric costo_unitario
+        boolean activo
+        uuid categoria_id FK
+    }
+
+    PRODUCTO {
+        uuid articulo_id PK, FK
+        numeric precio_venta
+    }
+
+    INSUMO {
+        uuid articulo_id PK, FK
+        text descripcion
+    }
+
+    PROVEEDOR {
+        uuid id PK
+        varchar razon_social
+        varchar identificacion_fiscal
+        varchar correo
+        varchar telefono
+        boolean activo
+    }
+
+    MOVIMIENTO_INVENTARIO {
+        uuid id PK
+        varchar tipo_movimiento
+        varchar motivo
+        timestamptz ocurrido_en
+        varchar referencia
+        text notas
+        uuid proveedor_id FK
+        uuid cliente_id FK
+        uuid orden_servicio_id FK
+        uuid registrado_por_usuario_id FK
+    }
+
+    DETALLE_MOVIMIENTO_INVENTARIO {
+        uuid id PK
+        uuid movimiento_id FK
+        uuid articulo_id FK
+        numeric cantidad
+        numeric costo_unitario
+        numeric precio_unitario
+    }
+
+    ORDEN_SERVICIO {
+        uuid id PK
+        varchar numero_orden UK
+        varchar estado
+        timestamptz solicitado_en
+        timestamptz vence_en
+        numeric total_cotizado
+        numeric total_final
+        text notas
+        uuid cliente_id FK
+        uuid creado_por_usuario_id FK
+        uuid asignado_a_usuario_id FK
+    }
+
+    DETALLE_ORDEN_SERVICIO {
+        uuid id PK
+        uuid orden_servicio_id FK
+        uuid insumo_id FK
+        varchar descripcion
+        numeric cantidad
+        numeric precio_unitario
+        text notas
+    }
+
+    TECNICA_PERSONALIZACION {
+        uuid id PK
+        varchar nombre UK
+        text descripcion
+        boolean activo
+    }
+
+    LINEA_ORDEN_TECNICA {
+        uuid detalle_orden_servicio_id PK, FK
+        uuid tecnica_id PK, FK
+    }
+
+    MOVIMIENTO_CUENTA_CLIENTE {
+        uuid id PK
+        varchar tipo_movimiento
+        numeric monto
+        varchar metodo_pago
+        varchar referencia
+        timestamptz ocurrido_en
+        text notas
+        uuid cliente_id FK
+        uuid orden_servicio_id FK
+        uuid movimiento_inventario_id FK
+        uuid registrado_por_usuario_id FK
+    }
+
+    BENEFICIO_FIDELIDAD {
+        uuid id PK
+        varchar nombre
+        text descripcion
+        integer costo_puntos
+        boolean activo
+    }
+
+    MOVIMIENTO_FIDELIDAD_CLIENTE {
+        uuid id PK
+        integer variacion_puntos
+        varchar motivo
+        timestamptz ocurrido_en
+        uuid cliente_id FK
+        uuid beneficio_fidelidad_id FK
+        uuid registrado_por_usuario_id FK
+    }
+
+    NOTIFICACION {
+        uuid id PK
+        varchar titulo
+        text mensaje
+        varchar canal
+        varchar estado
+        timestamptz creado_en
+        timestamptz enviado_en
+        timestamptz leido_en
+        uuid usuario_id FK
+        uuid cliente_id FK
+    }
+
+    USUARIO ||--o{ USUARIO_ROL : tiene
+    ROL ||--o{ USUARIO_ROL : asignado_a
+
+    CATEGORIA_ARTICULO ||--o{ ARTICULO : clasifica
+    ARTICULO ||--o| PRODUCTO : especializa_en
+    ARTICULO ||--o| INSUMO : especializa_en
+
+    PROVEEDOR o|--o{ MOVIMIENTO_INVENTARIO : proveedor_en_compra
+    USUARIO ||--o{ MOVIMIENTO_INVENTARIO : registra
+    CLIENTE o|--o{ MOVIMIENTO_INVENTARIO : cliente_en_venta
+    ORDEN_SERVICIO o|--o{ MOVIMIENTO_INVENTARIO : consumo_para_orden
+    MOVIMIENTO_INVENTARIO ||--|{ DETALLE_MOVIMIENTO_INVENTARIO : contiene
+    ARTICULO ||--o{ DETALLE_MOVIMIENTO_INVENTARIO : movido_como
+
+    CLIENTE ||--o{ ORDEN_SERVICIO : realiza
+    USUARIO ||--o{ ORDEN_SERVICIO : crea
+    USUARIO o|--o{ ORDEN_SERVICIO : asignado_a
+    ORDEN_SERVICIO ||--|{ DETALLE_ORDEN_SERVICIO : contiene
+    INSUMO ||--o{ DETALLE_ORDEN_SERVICIO : insumo_requerido
+    DETALLE_ORDEN_SERVICIO ||--o{ LINEA_ORDEN_TECNICA : usa
+    TECNICA_PERSONALIZACION ||--o{ LINEA_ORDEN_TECNICA : aplicada_a
+
+    CLIENTE ||--o{ MOVIMIENTO_CUENTA_CLIENTE : tiene
+    USUARIO ||--o{ MOVIMIENTO_CUENTA_CLIENTE : registra
+    ORDEN_SERVICIO o|--o{ MOVIMIENTO_CUENTA_CLIENTE : cargo_de_orden
+    MOVIMIENTO_INVENTARIO o|--o{ MOVIMIENTO_CUENTA_CLIENTE : cargo_de_venta
+
+    CLIENTE ||--o{ MOVIMIENTO_FIDELIDAD_CLIENTE : acumula_o_canjea
+    BENEFICIO_FIDELIDAD o|--o{ MOVIMIENTO_FIDELIDAD_CLIENTE : canjeado_como
+    USUARIO ||--o{ MOVIMIENTO_FIDELIDAD_CLIENTE : registra
+
+    USUARIO o|--o{ NOTIFICACION : recibe
+    CLIENTE o|--o{ NOTIFICACION : recibe
+
+%% Reglas conceptuales para concretar al implementar:
+%% - USUARIO/ROL se pueden implementar con ASP.NET Core Identity; nunca guardar contraseñas en texto plano.
+%% - ARTICULO contiene los campos comunes y la categoria; PRODUCTO e INSUMO heredan mediante articulo_id PK/FK y agregan solo sus campos propios.
+%% - Cada ARTICULO debe tener exactamente un registro hijo en PRODUCTO o INSUMO, nunca en ambos.
+%% - DETALLE_MOVIMIENTO_INVENTARIO referencia ARTICULO; tipo_movimiento/motivo y el subtipo determinan si se trata de venta o consumo.
+%% - Para motivo COMPRA, proveedor_id es obligatorio; en otros motivos debe ser nulo. El proveedor no se relaciona directamente con articulos.
+%% - Una VENTA solo puede mover articulos cuyo subtipo sea PRODUCTO; un CONSUMO solo articulos cuyo subtipo sea INSUMO.
+%% - Todo movimiento con motivo CONSUMO debe referenciar una ORDEN_SERVICIO.
+%% - DETALLE_ORDEN_SERVICIO registra los insumos previstos para el servicio; el movimiento de inventario registra las cantidades efectivamente consumidas.
+%% - DETALLE_MOVIMIENTO_INVENTARIO.cantidad siempre es positiva; costo_unitario/precio_unitario conservan el valor de la operacion.
+%% - MOVIMIENTO_CUENTA_CLIENTE.monto siempre es positivo. tipo_movimiento diferencia cargos y pagos; el saldo se calcula, no se almacena.
+%% - Un cargo de cuenta referencia exactamente una orden o un MOVIMIENTO_INVENTARIO por venta; un pago no referencia ninguno.
+%% - NOTIFICACION debe apuntar a exactamente un destinatario: usuario_id o cliente_id.
+%% - MOVIMIENTO_FIDELIDAD_CLIENTE.variacion_puntos puede ser positivo o negativo; el saldo se calcula sumando los movimientos.
