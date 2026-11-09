@@ -8,16 +8,26 @@
 
 ## Arquitectura y límites
 
-- La solución es un monolito modular Blazor/ASP.NET Core en .NET 10; organiza nuevas funcionalidades en `src/SistemaDDJ.Web/Features/<Feature>` y persistencia compartida en `Infrastructure/Persistence`.
-- Usa EF Core Code First con PostgreSQL/Npgsql; no agregues proyectos/capas separados sin una necesidad concreta.
-- Las páginas actuales de `Features/` son placeholders; no asumas que autenticación o lógica de negocio ya están implementadas.
+- La solución es un monolito modular Blazor/ASP.NET Core en .NET 10. Cada módulo de negocio vive en `src/SistemaDDJ.Web/Modules/<Modulo>` y es dueño de sus datos.
+- Módulos actuales (nombres en español): `Acceso`, `Inventario`, `Personalizacion`, `Clientes` y `Notificaciones`. Agregar o renombrar un módulo requiere actualizar este archivo y `docs/ai/ARCHITECTURE.md`.
+- Estructura de cada módulo: `PublicApi/`, `Entities/`, `Data/` (DbContext, `Configurations/` y `Migrations/`), `Features/` y `Pages/`. En la raíz va `<Modulo>Module.cs` con el método `Add<Modulo>Module`, que es su único punto de registro.
+- Dentro de `Features/<CasoDeUso>/` se usa Vertical Slice Architecture: request, validación, handler y endpoint juntos en un mismo archivo. Se separa en varios archivos solo cuando el archivo queda difícil de leer.
+- Un módulo accede a datos de otro únicamente mediante la `PublicApi/` de ese módulo. Prohibido inyectar otro `DbContext` o usar entidades, configuraciones o migraciones de otro módulo.
+- Los contratos de `PublicApi/` son DTOs o records; nunca se exponen entidades de EF.
+- No se permiten dependencias circulares entre módulos. Un flujo que abarque varios módulos (por ejemplo, venta + cargo en cuenta) lo orquesta un único caso de uso que llama a las APIs públicas dentro de una transacción.
+- Cada módulo tiene su esquema PostgreSQL (`acceso`, `inventario`, `personalizacion`, `clientes`, `notificaciones`), su `DbContext` y su tabla de historial de migraciones dentro de su esquema.
+- Las claves foráneas entre esquemas viven solo en `Infrastructure/Persistence/Integracion/Migrations` (`IntegracionDbContext`), que se aplica después de los módulos. No agregues FK entre esquemas en las migraciones de un módulo.
+- `Infrastructure/Persistence` contiene solo helpers técnicos compartidos (convenciones de nombres, registro de contextos, integración). No pongas lógica de negocio allí ni crees carpetas `Shared` de negocio.
+- Identificadores: `int` autoincremental para catálogos y tablas de relación. `uuid` (UUIDv7 con `Guid.CreateVersion7()`) solo para `MOVIMIENTO_INVENTARIO`, `CLIENTE`, `ORDEN_SERVICIO`, `MOVIMIENTO_CUENTA_CLIENTE`, `NOTIFICACION` y `MOVIMIENTO_FIDELIDAD_CLIENTE`. Cada FK usa el tipo de la clave que referencia.
+- Las bajas son lógicas (`activo = false`). No borres filas con historial; las FK usan `ON DELETE RESTRICT`.
+- Las páginas actuales de los módulos son placeholders; no asumas que autenticación o lógica de negocio ya están implementadas.
 - No guardes contraseñas ni cadenas de conexión reales en archivos versionados; usa .NET User Secrets localmente.
 
 ## Stack y arquitectura
 
 - Blazor y ASP.NET Core sobre .NET 10
-- PostgreSQL con EF Core Code First
-- Monolito modular; organizar el trabajo futuro por vertical slices dentro de cada feature
+- PostgreSQL con EF Core Code First, un `DbContext` por módulo
+- Monolito modular; VSA dentro de cada módulo
 
 ## Comandos
 
@@ -25,7 +35,10 @@
 - Ejecutar: `dotnet run --project src/SistemaDDJ.Web`.
 - Ejecutar pruebas: `dotnet test SistemaDDJ.sln`.
 - Restaurar la herramienta EF local: `dotnet tool restore`.
-- Crear/aplicar migraciones: `dotnet ef migrations add <Nombre> --project src/SistemaDDJ.Web` y `dotnet ef database update --project src/SistemaDDJ.Web`.
+- Crear migración de un módulo: `dotnet ef migrations add <Nombre> --context <Modulo>DbContext --project src/SistemaDDJ.Web --output-dir Modules/<Modulo>/Data/Migrations`.
+- Crear migración de integración: `dotnet ef migrations add <Nombre> --context IntegracionDbContext --project src/SistemaDDJ.Web --output-dir Infrastructure/Persistence/Integracion/Migrations`.
+- Aplicar migraciones: primero los contextos de los módulos y al final `IntegracionDbContext`, con `dotnet ef database update --context <Contexto> --project src/SistemaDDJ.Web`.
+- No edites migraciones ya aplicadas; crea una nueva.
 
 ## Flujo de trabajo para implementación
 
@@ -36,3 +49,8 @@
 - Crear una branch de Git para cada HU en progreso con el nombre `feature/<nombre-hu>`.
 - Para cada Epica completada y validada, documentar los cambios en el PR y subirlo a github.
 - Actualizar `docs/ai/MEMORY.md`.
+
+## Cuando actualizar este archivo
+
+- Cuando se agreguen dependencias externas, librerías o frameworks.
+- Cuando este archivo no refleje el funcionamiento de la aplicación.

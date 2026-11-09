@@ -1,6 +1,7 @@
 erDiagram
+    %% ===== Módulo Acceso (esquema: acceso) =====
     USUARIO {
-        uuid id PK
+        int id PK
         varchar correo UK
         varchar nombre_visible
         boolean activo
@@ -8,15 +9,16 @@ erDiagram
     }
 
     ROL {
-        uuid id PK
+        int id PK
         varchar nombre UK
     }
 
     USUARIO_ROL {
-        uuid usuario_id PK, FK
-        uuid rol_id PK, FK
+        int usuario_id PK, FK
+        int rol_id PK, FK
     }
 
+    %% ===== Módulo Clientes (esquema: clientes) =====
     CLIENTE {
         uuid id PK
         varchar nombre
@@ -27,36 +29,70 @@ erDiagram
         timestamptz creado_en
     }
 
-    CATEGORIA_ARTICULO {
+    BENEFICIO_FIDELIDAD {
+        int id PK
+        varchar nombre
+        text descripcion
+        integer costo_puntos
+        boolean activo
+    }
+
+    MOVIMIENTO_FIDELIDAD_CLIENTE {
         uuid id PK
+        integer variacion_puntos
+        varchar motivo
+        timestamptz ocurrido_en
+        uuid cliente_id FK
+        int beneficio_fidelidad_id FK
+        int registrado_por_usuario_id FK
+    }
+
+    MOVIMIENTO_CUENTA_CLIENTE {
+        uuid id PK
+        varchar tipo_movimiento
+        numeric monto
+        varchar metodo_pago
+        varchar referencia
+        timestamptz ocurrido_en
+        text notas
+        uuid cliente_id FK
+        uuid orden_servicio_id FK
+        uuid movimiento_inventario_id FK
+        int registrado_por_usuario_id FK
+    }
+
+    %% ===== Módulo Inventario (esquema: inventario) =====
+    CATEGORIA_ARTICULO {
+        int id PK
         varchar nombre UK
         text descripcion
         boolean activo
     }
 
     ARTICULO {
-        uuid id PK
+        int id PK
         varchar codigo UK
         varchar nombre
         varchar unidad
         varchar tipo
         numeric costo_unitario
         boolean activo
-        uuid categoria_id FK
+        int categoria_id FK
     }
 
     PRODUCTO {
-        uuid articulo_id PK, FK
+        int articulo_id PK, FK
+        varchar sku UK
         numeric precio_venta
     }
 
     INSUMO {
-        uuid articulo_id PK, FK
+        int articulo_id PK, FK
         text descripcion
     }
 
     PROVEEDOR {
-        uuid id PK
+        int id PK
         varchar razon_social
         varchar identificacion_fiscal
         varchar correo
@@ -71,21 +107,22 @@ erDiagram
         timestamptz ocurrido_en
         varchar referencia
         text notas
-        uuid proveedor_id FK
+        int proveedor_id FK
         uuid cliente_id FK
         uuid orden_servicio_id FK
-        uuid registrado_por_usuario_id FK
+        int registrado_por_usuario_id FK
     }
 
     DETALLE_MOVIMIENTO_INVENTARIO {
-        uuid id PK
+        int id PK
         uuid movimiento_id FK
-        uuid articulo_id FK
+        int articulo_id FK
         numeric cantidad
         numeric costo_unitario
         numeric precio_unitario
     }
 
+    %% ===== Módulo Personalizacion (esquema: personalizacion) =====
     ORDEN_SERVICIO {
         uuid id PK
         varchar numero_orden UK
@@ -96,14 +133,14 @@ erDiagram
         numeric total_final
         text notas
         uuid cliente_id FK
-        uuid creado_por_usuario_id FK
-        uuid asignado_a_usuario_id FK
+        int creado_por_usuario_id FK
+        int asignado_a_usuario_id FK
     }
 
     DETALLE_ORDEN_SERVICIO {
-        uuid id PK
+        int id PK
         uuid orden_servicio_id FK
-        uuid insumo_id FK
+        int insumo_id FK
         varchar descripcion
         numeric cantidad
         numeric precio_unitario
@@ -111,49 +148,18 @@ erDiagram
     }
 
     TECNICA_PERSONALIZACION {
-        uuid id PK
+        int id PK
         varchar nombre UK
         text descripcion
         boolean activo
     }
 
     LINEA_ORDEN_TECNICA {
-        uuid detalle_orden_servicio_id PK, FK
-        uuid tecnica_id PK, FK
+        int detalle_orden_servicio_id PK, FK
+        int tecnica_id PK, FK
     }
 
-    MOVIMIENTO_CUENTA_CLIENTE {
-        uuid id PK
-        varchar tipo_movimiento
-        numeric monto
-        varchar metodo_pago
-        varchar referencia
-        timestamptz ocurrido_en
-        text notas
-        uuid cliente_id FK
-        uuid orden_servicio_id FK
-        uuid movimiento_inventario_id FK
-        uuid registrado_por_usuario_id FK
-    }
-
-    BENEFICIO_FIDELIDAD {
-        uuid id PK
-        varchar nombre
-        text descripcion
-        integer costo_puntos
-        boolean activo
-    }
-
-    MOVIMIENTO_FIDELIDAD_CLIENTE {
-        uuid id PK
-        integer variacion_puntos
-        varchar motivo
-        timestamptz ocurrido_en
-        uuid cliente_id FK
-        uuid beneficio_fidelidad_id FK
-        uuid registrado_por_usuario_id FK
-    }
-
+    %% ===== Módulo Notificaciones (esquema: notificaciones) =====
     NOTIFICACION {
         uuid id PK
         varchar titulo
@@ -163,7 +169,7 @@ erDiagram
         timestamptz creado_en
         timestamptz enviado_en
         timestamptz leido_en
-        uuid usuario_id FK
+        int usuario_id FK
         uuid cliente_id FK
     }
 
@@ -201,6 +207,14 @@ erDiagram
     USUARIO o|--o{ NOTIFICACION : recibe
     CLIENTE o|--o{ NOTIFICACION : recibe
 
+%% Estrategia de IDs:
+%% - uuid (UUIDv7, generado en la aplicación): MOVIMIENTO_INVENTARIO, CLIENTE, ORDEN_SERVICIO, MOVIMIENTO_CUENTA_CLIENTE, NOTIFICACION, MOVIMIENTO_FIDELIDAD_CLIENTE.
+%% - int (identity autoincremental): el resto de tablas. Cada FK usa el mismo tipo que la clave que referencia.
+%%
+%% Aislamiento de datos:
+%% - Cada módulo tiene su propio esquema PostgreSQL y su propio DbContext. Los módulos no leen ni escriben tablas de otro módulo; se comunican por su API pública.
+%% - Las claves foráneas entre esquemas se mantienen en la base de datos (ON DELETE RESTRICT) y se crean en una migración de integración posterior a las tablas de los módulos.
+%%
 %% Reglas conceptuales para concretar al implementar:
 %% - USUARIO/ROL se pueden implementar con ASP.NET Core Identity; nunca guardar contraseñas en texto plano.
 %% - ARTICULO contiene los campos comunes y la categoria; PRODUCTO e INSUMO heredan mediante articulo_id PK/FK y agregan solo sus campos propios.
@@ -208,8 +222,9 @@ erDiagram
 %% - DETALLE_MOVIMIENTO_INVENTARIO referencia ARTICULO; tipo_movimiento/motivo y el subtipo determinan si se trata de venta o consumo.
 %% - Para motivo COMPRA, proveedor_id es obligatorio; en otros motivos debe ser nulo. El proveedor no se relaciona directamente con articulos.
 %% - Una VENTA solo puede mover articulos cuyo subtipo sea PRODUCTO; un CONSUMO solo articulos cuyo subtipo sea INSUMO.
-%% - Todo movimiento con motivo CONSUMO debe referenciar una ORDEN_SERVICIO.
-%% - DETALLE_ORDEN_SERVICIO registra los insumos previstos para el servicio; el movimiento de inventario registra las cantidades efectivamente consumidas.
+%% - Todo movimiento con motivo CONSUMO debe referenciar una ORDEN_SERVICIO; un movimiento con motivo MERMA puede referenciar opcionalmente una ORDEN_SERVICIO.
+%% - DETALLE_ORDEN_SERVICIO registra los insumos previstos para el servicio; el movimiento de inventario registra las cantidades efectivamente consumidas o mermadas.
+%% - Para formalizar una ORDEN_SERVICIO el cliente debe abonar como minimo el 50% del valor del servicio (registrando el CARGO de la orden y el PAGO inicial en MOVIMIENTO_CUENTA_CLIENTE).
 %% - DETALLE_MOVIMIENTO_INVENTARIO.cantidad siempre es positiva; costo_unitario/precio_unitario conservan el valor de la operacion.
 %% - MOVIMIENTO_CUENTA_CLIENTE.monto siempre es positivo. tipo_movimiento diferencia cargos y pagos; el saldo se calcula, no se almacena.
 %% - Un cargo de cuenta referencia exactamente una orden o un MOVIMIENTO_INVENTARIO por venta; un pago no referencia ninguno.

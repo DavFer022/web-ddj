@@ -1,6 +1,11 @@
 using SistemaDDJ.Web.Components;
 using SistemaDDJ.Web.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using SistemaDDJ.Web.Infrastructure.Persistence.Integracion;
+using SistemaDDJ.Web.Modules.Acceso;
+using SistemaDDJ.Web.Modules.Clientes;
+using SistemaDDJ.Web.Modules.Inventario;
+using SistemaDDJ.Web.Modules.Notificaciones;
+using SistemaDDJ.Web.Modules.Personalizacion;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +19,13 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "Falta la cadena de conexión 'DefaultConnection'. Configúrala con .NET User Secrets; consulta el README.md.");
 }
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services
+    .AddAccesoModule(connectionString)
+    .AddClientesModule(connectionString)
+    .AddInventarioModule(connectionString)
+    .AddNotificacionesModule(connectionString)
+    .AddPersonalizacionModule(connectionString)
+    .AddModuleDbContext<IntegracionDbContext>(connectionString, IntegracionDbContext.Schema);
 
 var app = builder.Build();
 
@@ -22,6 +33,11 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
+}
+else
+{
+    using var scope = app.Services.CreateScope();
+    await DevelopmentDataSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);

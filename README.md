@@ -35,16 +35,36 @@ Las pruebas están en `tests/SistemaDDJ.Tests`. Las pruebas de integración que 
 
 ## Base de datos
 
-El proyecto usa EF Core con el proveedor Npgsql y `AppDbContext`. Cuando se agreguen las primeras entidades, crear una migración con:
+El proyecto usa EF Core con Npgsql. Cada módulo tiene su propio `DbContext` y su esquema PostgreSQL (`acceso`, `inventario`, `personalizacion`, `clientes`, `notificaciones`). Las claves foráneas entre esquemas se crean en un contexto de integración que se aplica al final.
+
+Aplicar migraciones desde cero, en este orden:
 
 ```sh
 dotnet tool restore
-dotnet ef migrations add InitialCreate --project src/SistemaDDJ.Web
-dotnet ef database update --project src/SistemaDDJ.Web
+dotnet ef database update --context AccesoDbContext --project src/SistemaDDJ.Web
+dotnet ef database update --context InventarioDbContext --project src/SistemaDDJ.Web
+dotnet ef database update --context PersonalizacionDbContext --project src/SistemaDDJ.Web
+dotnet ef database update --context ClientesDbContext --project src/SistemaDDJ.Web
+dotnet ef database update --context NotificacionesDbContext --project src/SistemaDDJ.Web
+dotnet ef database update --context IntegracionDbContext --project src/SistemaDDJ.Web
+```
+
+Al ejecutar la aplicación en Development se cargan datos de prueba (solo si la base no tiene usuarios y no hay migraciones pendientes en ningún contexto).
+
+Nueva migración de un módulo:
+
+```sh
+dotnet ef migrations add <Nombre> --context InventarioDbContext --project src/SistemaDDJ.Web --output-dir Modules/Inventario/Data/Migrations
+```
+
+Nueva migración de integración (claves entre esquemas):
+
+```sh
+dotnet ef migrations add <Nombre> --context IntegracionDbContext --project src/SistemaDDJ.Web --output-dir Infrastructure/Persistence/Integracion/Migrations
 ```
 
 ## Estructura
 
-- `src/SistemaDDJ.Web/Features/`: módulos y funcionalidades organizados por feature.
-- `src/SistemaDDJ.Web/Infrastructure/Persistence/`: configuración de persistencia.
-- `docs/ai/`: contexto y convenciones del proyecto para asistentes de IA.
+- `src/SistemaDDJ.Web/Modules/<Modulo>/`: módulos de negocio (`PublicApi`, `Entities`, `Data`, `Features`, `Pages`).
+- `src/SistemaDDJ.Web/Infrastructure/Persistence/`: helpers de persistencia, datos de prueba e integración entre esquemas.
+- `docs/ai/`: contexto y convenciones del proyecto para asistentes de IA. Ver `docs/ai/ARCHITECTURE.md`.
