@@ -24,7 +24,7 @@ public sealed class ArticuloConfiguration : IEntityTypeConfiguration<Articulo>
         builder.Property(x => x.Codigo).HasMaxLength(30).IsRequired();
         builder.HasIndex(x => x.Codigo).IsUnique();
         builder.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
-        builder.Property(x => x.Unidad).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Unidad).HasConversion<string>().HasMaxLength(30);
         builder.Property(x => x.Tipo).HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.CostoUnitario).HasPrecision(18, 2);
         builder.Property(x => x.Activo).HasDefaultValue(true);
@@ -35,6 +35,8 @@ public sealed class ArticuloConfiguration : IEntityTypeConfiguration<Articulo>
             t.HasCheckConstraint("ck_articulo_tipo",
                 $"tipo IN ({PersistenceExtensions.SqlValuesOf<ArticuloTipo>()})");
             t.HasCheckConstraint("ck_articulo_costo_unitario", "costo_unitario >= 0");
+            t.HasCheckConstraint("ck_articulo_unidad",
+                $"unidad IN ({PersistenceExtensions.SqlValuesOf<UnidadMedida>()})");
         });
     }
 }

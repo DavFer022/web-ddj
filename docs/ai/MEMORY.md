@@ -11,7 +11,8 @@ descripcion: Memoria a corto plazo del estado actual del proyecto, Maximo ~50 li
 - Módulos: `Acceso`, `Inventario`, `Personalizacion`, `Clientes`, `Notificaciones` en `src/SistemaDDJ.Web/Modules/`. Cada uno con su `DbContext` y esquema PostgreSQL.
 - Base `web_ddj` limpiada y migrada con la estructura nueva (19 tablas en 5 esquemas, 13 FK entre esquemas en `IntegracionDbContext`).
 - Datos de prueba en `DevelopmentDataSeeder` (Development, en una sola transacción, omitido si ya hay usuarios o migraciones pendientes).
-- Ninguna HU implementada todavía; solo modelo, estructura y datos.
+- HU-04 completada en `feature/hu-04-catalogo-articulos` (categorías, artículos producto/insumo, pantalla básica en `/inventario`). Pruebas: 12 pasan, incluidas 10 de catálogo con PostgreSQL aislado (`web_ddj_tests`).
+- Pendientes de Inventario: HU-05 a HU-10 (ver `HU-IMPLEMENT.md`).
 
 ## Decisiones y por que
 
@@ -24,6 +25,8 @@ descripcion: Memoria a corto plazo del estado actual del proyecto, Maximo ~50 li
 - Sin contraseñas en `acceso.usuario`: autenticación pendiente (se implementará más adelante).
 - `producto.sku` agregado según el MER (cambio hecho por el usuario).
 - Los datos de prueba se siembran por etapas, usando una conexión compartida, porque cada `DbContext` tiene su propia conexión.
+- Unidades de artículo en lista fija (`UnidadMedida`), código y SKU manuales y únicos (normalizados a mayúsculas).
+- Pruebas de integración: base `*_tests` indicada por `DDJ_TEST_CONNECTION`; la fixture se niega a usar otras bases.
 
 ## Aprendizajes y Errores a evitar
 

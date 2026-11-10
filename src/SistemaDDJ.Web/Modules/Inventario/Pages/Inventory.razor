@@ -1,6 +1,168 @@
 @page "/inventario"
+@using Microsoft.EntityFrameworkCore
+@using SistemaDDJ.Web.Modules.Inventario.Data
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria
+@inject InventarioDbContext Db
+@inject RegistrarCategoria.Handler RegistrarCategoriaHandler
+@inject RegistrarArticulo.Handler RegistrarArticuloHandler
 
 <PageTitle>Inventario | Sistema DD&amp;J</PageTitle>
 
-<h1>Inventario</h1>
-<p>Módulo de inventario pendiente de implementar.</p>
+<h1>Catálogo de inventario</h1>
+
+<div class="row">
+    <div class="col-md-5">
+        <h2>Nueva categoría</h2>
+        <EditForm Model="_categoria" OnValidSubmit="GuardarCategoriaAsync" FormName="categoria">
+            <div class="mb-2">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="_categoria.Nombre" />
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Descripción</label>
+                <InputText class="form-control" @bind-Value="_categoria.Descripcion" />
+            </div>
+            <button class="btn btn-primary" type="submit">Guardar categoría</button>
+        </EditForm>
+        <ul class="text-danger mt-2">
+            @foreach (var error in _erroresCategoria)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+
+    <div class="col-md-7">
+        <h2>Nuevo artículo</h2>
+        <EditForm Model="_articulo" OnValidSubmit="GuardarArticuloAsync" FormName="articulo">
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Tipo</label>
+                    <InputSelect class="form-select" @bind-Value="_articulo.Tipo">
+                        <option value="@ArticuloTipo.PRODUCTO">Producto de venta</option>
+                        <option value="@ArticuloTipo.INSUMO">Insumo de personalización</option>
+                    </InputSelect>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Categoría</label>
+                    <InputSelect class="form-select" @bind-Value="_articulo.CategoriaId">
+                        <option value="0">Seleccione...</option>
+                        @foreach (var categoria in _categorias)
+                        {
+                            <option value="@categoria.Id">@categoria.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Código</label>
+                    <InputText class="form-control" @bind-Value="_articulo.Codigo" />
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="_articulo.Nombre" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Unidad</label>
+                    <InputSelect class="form-select" @bind-Value="_articulo.Unidad">
+                        @foreach (var unidad in Enum.GetValues<UnidadMedida>())
+                        {
+                            <option value="@unidad">@unidad</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Costo unitario</label>
+                    <InputNumber class="form-control" @bind-Value="_articulo.CostoUnitario" />
+                </div>
+                @if (_articulo.Tipo == ArticuloTipo.PRODUCTO)
+                {
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label">SKU</label>
+                        <InputText class="form-control" @bind-Value="_articulo.Sku" />
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label">Precio de venta</label>
+                        <InputNumber class="form-control" @bind-Value="_articulo.PrecioVenta" />
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-4 mb-2">
+                        <label class="form-label">Descripción del insumo</label>
+                        <InputText class="form-control" @bind-Value="_articulo.Descripcion" />
+                    </div>
+                }
+            </div>
+            <button class="btn btn-primary" type="submit">Guardar artículo</button>
+        </EditForm>
+        <ul class="text-danger mt-2">
+            @foreach (var error in _erroresArticulo)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    private sealed class FormularioCategoria
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+    }
+
+    private sealed class FormularioArticulo
+    {
+        public ArticuloTipo Tipo { get; set; } = ArticuloTipo.PRODUCTO;
+        public int CategoriaId { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public UnidadMedida Unidad { get; set; } = UnidadMedida.UNIDAD;
+        public decimal CostoUnitario { get; set; }
+        public string? Sku { get; set; }
+        public decimal? PrecioVenta { get; set; }
+        public string? Descripcion { get; set; }
+    }
+
+    private readonly FormularioCategoria _categoria = new();
+    private readonly FormularioArticulo _articulo = new();
+    private List<CategoriaArticulo> _categorias = [];
+    private IReadOnlyList<string> _erroresCategoria = [];
+    private IReadOnlyList<string> _erroresArticulo = [];
+
+    protected override async Task OnInitializedAsync() => await CargarCategoriasAsync();
+
+    private async Task CargarCategoriasAsync() =>
+        _categorias = await Db.CategoriasArticulo.Where(c => c.Activo).OrderBy(c => c.Nombre).ToListAsync();
+
+    private async Task GuardarCategoriaAsync()
+    {
+        var resultado = await RegistrarCategoriaHandler.HandleAsync(new RegistrarCategoria.Command(_categoria.Nombre, _categoria.Descripcion));
+        _erroresCategoria = resultado.Errores;
+        if (resultado.Exitoso)
+        {
+            _categoria.Nombre = string.Empty;
+            _categoria.Descripcion = null;
+            await CargarCategoriasAsync();
+        }
+    }
+
+    private async Task GuardarArticuloAsync()
+    {
+        var comando = new RegistrarArticulo.Command(
+            _articulo.Codigo, _articulo.Nombre, _articulo.Unidad, _articulo.CostoUnitario, _articulo.CategoriaId, _articulo.Tipo,
+            _articulo.PrecioVenta, _articulo.Sku, _articulo.Descripcion);
+        var resultado = await RegistrarArticuloHandler.HandleAsync(comando);
+        _erroresArticulo = resultado.Errores;
+        if (resultado.Exitoso)
+        {
+            _articulo.Codigo = string.Empty;
+            _articulo.Nombre = string.Empty;
+            _articulo.Sku = null;
+            _articulo.PrecioVenta = null;
+            _articulo.Descripcion = null;
+        }
+    }
+}

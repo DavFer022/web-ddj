@@ -31,7 +31,12 @@ Ejecuta la suite con:
 dotnet test SistemaDDJ.sln
 ```
 
-Las pruebas están en `tests/SistemaDDJ.Tests`. Las pruebas de integración que requieran PostgreSQL deben usar una base de datos de prueba aislada.
+Las pruebas están en `tests/SistemaDDJ.Tests`. Las pruebas de integración que requieren PostgreSQL usan la variable de entorno `DDJ_TEST_CONNECTION` con una base que termine en `_tests` (por ejemplo `web_ddj_tests`). La base se crea si no existe; nunca se usa la base de desarrollo. Ejemplo en PowerShell:
+
+```sh
+export DDJ_TEST_CONNECTION="Host=127.0.0.1;Port=5433;Database=web_ddj_tests;Username=postgres;Password=<tu-contraseña>"
+dotnet test SistemaDDJ.sln
+```
 
 ## Base de datos
 

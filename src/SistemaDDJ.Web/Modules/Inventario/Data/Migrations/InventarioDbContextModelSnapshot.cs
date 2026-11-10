@@ -83,6 +83,8 @@ namespace SistemaDDJ.Web.Modules.Inventario.Data.Migrations
                             t.HasCheckConstraint("ck_articulo_costo_unitario", "costo_unitario >= 0");
 
                             t.HasCheckConstraint("ck_articulo_tipo", "tipo IN ('PRODUCTO', 'INSUMO')");
+
+                            t.HasCheckConstraint("ck_articulo_unidad", "unidad IN ('UNIDAD', 'METRO', 'HOJA', 'ROLLO', 'ML', 'KG', 'LITRO')");
                         });
                 });
 

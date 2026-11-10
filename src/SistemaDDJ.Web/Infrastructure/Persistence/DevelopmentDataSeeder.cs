@@ -71,13 +71,13 @@ public static class DevelopmentDataSeeder
         inventario.CategoriasArticulo.AddRange(ropa, tazas, insumosSublimacion, insumosDtfVinil);
         await inventario.SaveChangesAsync(cancellationToken);
 
-        var franelaM = NuevoArticulo("PRD-001", "Franela blanca M", "unidad", ArticuloTipo.PRODUCTO, 4.50m, ropa.Id);
-        var franelaL = NuevoArticulo("PRD-002", "Franela blanca L", "unidad", ArticuloTipo.PRODUCTO, 4.50m, ropa.Id);
-        var taza = NuevoArticulo("PRD-003", "Taza blanca 11 oz", "unidad", ArticuloTipo.PRODUCTO, 1.20m, tazas.Id);
-        var papelSublimacion = NuevoArticulo("INS-001", "Papel de sublimación A4", "hoja", ArticuloTipo.INSUMO, 0.30m, insumosSublimacion.Id);
-        var tintaSublimacion = NuevoArticulo("INS-002", "Tinta de sublimación cian", "ml", ArticuloTipo.INSUMO, 0.08m, insumosSublimacion.Id);
-        var vinilNegro = NuevoArticulo("INS-003", "Vinil textil negro", "metro", ArticuloTipo.INSUMO, 3.50m, insumosDtfVinil.Id);
-        var peliculaDtf = NuevoArticulo("INS-004", "Película DTF A3", "hoja", ArticuloTipo.INSUMO, 1.20m, insumosDtfVinil.Id);
+        var franelaM = NuevoArticulo("PRD-001", "Franela blanca M", UnidadMedida.UNIDAD, ArticuloTipo.PRODUCTO, 4.50m, ropa.Id);
+        var franelaL = NuevoArticulo("PRD-002", "Franela blanca L", UnidadMedida.UNIDAD, ArticuloTipo.PRODUCTO, 4.50m, ropa.Id);
+        var taza = NuevoArticulo("PRD-003", "Taza blanca 11 oz", UnidadMedida.UNIDAD, ArticuloTipo.PRODUCTO, 1.20m, tazas.Id);
+        var papelSublimacion = NuevoArticulo("INS-001", "Papel de sublimación A4", UnidadMedida.HOJA, ArticuloTipo.INSUMO, 0.30m, insumosSublimacion.Id);
+        var tintaSublimacion = NuevoArticulo("INS-002", "Tinta de sublimación cian", UnidadMedida.ML, ArticuloTipo.INSUMO, 0.08m, insumosSublimacion.Id);
+        var vinilNegro = NuevoArticulo("INS-003", "Vinil textil negro", UnidadMedida.METRO, ArticuloTipo.INSUMO, 3.50m, insumosDtfVinil.Id);
+        var peliculaDtf = NuevoArticulo("INS-004", "Película DTF A3", UnidadMedida.HOJA, ArticuloTipo.INSUMO, 1.20m, insumosDtfVinil.Id);
         inventario.Articulos.AddRange(franelaM, franelaL, taza, papelSublimacion, tintaSublimacion, vinilNegro, peliculaDtf);
         await inventario.SaveChangesAsync(cancellationToken);
 
@@ -188,7 +188,7 @@ public static class DevelopmentDataSeeder
         await transaccion.CommitAsync(cancellationToken);
     }
 
-    private static Articulo NuevoArticulo(string codigo, string nombre, string unidad, ArticuloTipo tipo, decimal costo, int categoriaId) =>
+    private static Articulo NuevoArticulo(string codigo, string nombre, UnidadMedida unidad, ArticuloTipo tipo, decimal costo, int categoriaId) =>
         new() { Codigo = codigo, Nombre = nombre, Unidad = unidad, Tipo = tipo, CostoUnitario = costo, CategoriaId = categoriaId };
 
     private static MovimientoInventario Movimiento(

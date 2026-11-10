@@ -19,7 +19,9 @@ reglas:
 
 #### HU-04: Gestión de categorías y catálogo separado de productos e insumos
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/hu-04-catalogo-articulos`)
+
+**Decisiones acordadas:** código manual y único (se normaliza a mayúsculas); unidad de lista fija (`UNIDAD`, `METRO`, `HOJA`, `ROLLO`, `ML`, `KG`, `LITRO`); SKU manual y único, obligatorio en PRODUCTO; una variante de talla/color es un artículo distinto; incluye pantalla básica en `Modules/Inventario/Pages`.
 
 **Como** Ususario trabajador de la tienda **Quiero** registrar categorías (`CATEGORIA_ARTICULO`) y dar de alta artículos diferenciando si son `PRODUCTO` de venta o `INSUMO` de personalización **Para** mantener separados el catálogo comercial y el de taller compartiendo los datos base de `ARTICULO`
 
