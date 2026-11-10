@@ -64,7 +64,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 ### Épica: Movimientos de inventario y casos especiales
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 #### HU-07: Entrada de inventario por compra a proveedor
 
@@ -103,7 +103,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 #### HU-10: Ajustes de inventario, mermas de taller
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador de la tienda **Quiero** registrar ajustes de inventario, mermas por pruebas/errores de estampado **Para** cuadrar el stock físico con el sistema dejando constancia del motivo y las notas
 

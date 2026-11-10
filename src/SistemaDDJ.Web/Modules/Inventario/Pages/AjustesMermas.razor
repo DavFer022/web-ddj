@@ -1,0 +1,228 @@
+@page "/inventario/ajustes"
+@using Microsoft.EntityFrameworkCore
+@using SistemaDDJ.Web.Modules.Acceso.PublicApi
+@using SistemaDDJ.Web.Modules.Inventario.Data
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarStock
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarAjusteOMerma
+@using SistemaDDJ.Web.Modules.Personalizacion.PublicApi
+@inject InventarioDbContext Db
+@inject IAccesoPublicApi Acceso
+@inject IPersonalizacionPublicApi Personalizacion
+@inject RegistrarAjusteOMerma.Handler RegistrarAjusteHandler
+
+<PageTitle>Ajustes y mermas | Sistema DD&amp;J</PageTitle>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Ajustes y mermas</li>
+    </ol>
+</nav>
+
+<h1>Ajustes y mermas</h1>
+
+@if (_usuarioActual is null)
+{
+    <div class="alert alert-warning">No hay un usuario activo para registrar el movimiento.</div>
+}
+else
+{
+    <p class="text-muted">Registrado por: <strong>@_usuarioActual.NombreVisible</strong></p>
+}
+
+<ul class="text-danger">
+    @foreach (var error in _errores)
+    {
+        <li>@error</li>
+    }
+</ul>
+
+@if (!string.IsNullOrWhiteSpace(_mensaje))
+{
+    <div class="alert alert-success">@_mensaje</div>
+}
+
+<div class="row g-2 mb-3">
+    <div class="col-md-2">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" @bind="_tipoMovimiento">
+            <option value="@TipoMovimientoInventario.ENTRADA">Entrada</option>
+            <option value="@TipoMovimientoInventario.SALIDA">Salida</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Motivo</label>
+        <select class="form-select" @bind="_motivo" @bind:after="CambiarMotivoAsync">
+            <option value="@MotivoMovimientoInventario.AJUSTE">Ajuste</option>
+            <option value="@MotivoMovimientoInventario.MERMA">Merma</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Notas (obligatorias)</label>
+        <textarea class="form-control" rows="2" @bind="_notas" placeholder="Explique la causa del ajuste o de la merma"></textarea>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Referencia</label>
+        <input class="form-control" @bind="_referencia" />
+    </div>
+    @if (_motivo == MotivoMovimientoInventario.MERMA)
+    {
+        <div class="col-md-2">
+            <label class="form-label">Orden (opcional)</label>
+            <select class="form-select" @bind="_ordenServicioId">
+                <option value="">Sin orden</option>
+                @foreach (var orden in _ordenes)
+                {
+                    <option value="@orden.Id">@orden.NumeroOrden</option>
+                }
+            </select>
+        </div>
+    }
+</div>
+
+<h2 class="h4">Artículos</h2>
+<table class="table table-sm align-middle">
+    <thead>
+        <tr>
+            <th>Artículo</th>
+            <th class="text-end">Stock</th>
+            <th style="width: 9rem;">Cantidad</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < _lineas.Count; i++)
+        {
+            var indice = i;
+            var articulo = _articulos.FirstOrDefault(x => x.ArticuloId == _lineas[indice].ArticuloId);
+            <tr>
+                <td>
+                    <select class="form-select" @bind="_lineas[indice].ArticuloId">
+                        <option value="0">Seleccione...</option>
+                        @foreach (var opcion in ArticulosDisponibles)
+                        {
+                            <option value="@opcion.ArticuloId">@opcion.Codigo — @opcion.Nombre (@opcion.Tipo)</option>
+                        }
+                    </select>
+                </td>
+                <td class="text-end">@(articulo?.Stock.ToString("0.###") ?? "—")</td>
+                <td><input type="number" step="0.001" class="form-control" @bind="_lineas[indice].Cantidad" /></td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => QuitarLinea(indice)">×</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarLinea">Agregar línea</button>
+
+<div>
+    <button class="btn btn-primary" disabled="@(_usuarioActual is null)" @onclick="GuardarAsync">Registrar movimiento</button>
+</div>
+
+@code {
+    private sealed class LineaMovimiento
+    {
+        public int ArticuloId { get; set; }
+        public decimal Cantidad { get; set; }
+    }
+
+    private sealed record ArticuloOpcion(
+        int ArticuloId,
+        string Codigo,
+        string Nombre,
+        ArticuloTipo Tipo,
+        decimal Stock);
+
+    private UsuarioDto? _usuarioActual;
+    private IReadOnlyList<OrdenServicioResumenDto> _ordenes = [];
+    private List<ArticuloOpcion> _articulos = [];
+    private TipoMovimientoInventario _tipoMovimiento = TipoMovimientoInventario.ENTRADA;
+    private MotivoMovimientoInventario _motivo = MotivoMovimientoInventario.AJUSTE;
+    private string? _notas;
+    private string? _referencia;
+    private Guid? _ordenServicioId;
+    private List<LineaMovimiento> _lineas = [new()];
+    private IReadOnlyList<string> _errores = [];
+    private string? _mensaje;
+
+    private IEnumerable<ArticuloOpcion> ArticulosDisponibles =>
+        _motivo == MotivoMovimientoInventario.MERMA
+            ? _articulos.Where(a => a.Tipo == ArticuloTipo.INSUMO)
+            : _articulos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuarioActual = await Acceso.ObtenerUsuarioActualAsync();
+        _ordenes = await Personalizacion.ListarAbiertasAsync();
+        await CargarArticulosAsync();
+    }
+
+    private async Task CambiarMotivoAsync()
+    {
+        if (_motivo == MotivoMovimientoInventario.AJUSTE)
+        {
+            _ordenServicioId = null;
+            return;
+        }
+
+        _tipoMovimiento = TipoMovimientoInventario.SALIDA;
+        var permitidos = ArticulosDisponibles.Select(a => a.ArticuloId).ToHashSet();
+        foreach (var linea in _lineas.Where(l => l.ArticuloId != 0 && !permitidos.Contains(l.ArticuloId)))
+        {
+            linea.ArticuloId = 0;
+        }
+    }
+
+    private void AgregarLinea() => _lineas.Add(new LineaMovimiento());
+
+    private void QuitarLinea(int indice)
+    {
+        _lineas.RemoveAt(indice);
+        if (_lineas.Count == 0) _lineas.Add(new LineaMovimiento());
+    }
+
+    private async Task CargarArticulosAsync()
+    {
+        var articulos = await Db.Articulos
+            .Where(a => a.Activo)
+            .OrderBy(a => a.Nombre)
+            .ToListAsync();
+        var ids = articulos.Select(a => a.Id).ToList();
+        var saldos = await SaldosInventario.ObtenerSaldosAsync(Db, ids);
+        _articulos = articulos
+            .Select(a => new ArticuloOpcion(a.Id, a.Codigo, a.Nombre, a.Tipo, saldos.GetValueOrDefault(a.Id)))
+            .ToList();
+    }
+
+    private async Task GuardarAsync()
+    {
+        _errores = [];
+        _mensaje = null;
+        if (_usuarioActual is null) return;
+
+        var lineas = _lineas
+            .Where(l => l.ArticuloId != 0 || l.Cantidad != 0)
+            .Select(l => new RegistrarAjusteOMerma.Linea(l.ArticuloId, l.Cantidad))
+            .ToList();
+
+        var resultado = await RegistrarAjusteHandler.HandleAsync(
+            new RegistrarAjusteOMerma.Command(
+                _tipoMovimiento,
+                _motivo,
+                _notas,
+                _usuarioActual.Id,
+                _ordenServicioId,
+                _referencia,
+                lineas));
+
+        _errores = resultado.Errores;
+        if (!resultado.Exitoso) return;
+
+        _mensaje = $"Movimiento de {_motivo} registrado con {lineas.Count} línea(s).";
+        _lineas = [new()];
+        _notas = null;
+        _referencia = null;
+        await CargarArticulosAsync();
+    }
+}

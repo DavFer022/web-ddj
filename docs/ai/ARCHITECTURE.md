@@ -30,6 +30,13 @@ src/SistemaDDJ.Web/
   Components/           shell de la aplicación (layout, rutas, páginas genéricas)
 ```
 
+## Contratos entre módulos
+
+- `Acceso/PublicApi/IAccesoPublicApi`: valida usuarios activos, roles y expone el usuario actual temporal mientras no exista autenticación.
+- `Clientes/PublicApi/IClientesPublicApi`: consulta clientes activos para ventas y operaciones de otros módulos.
+- `Personalizacion/PublicApi/IPersonalizacionPublicApi`: consulta órdenes existentes, estados que admiten consumo y órdenes abiertas.
+- Los consumidores solo usan estos contratos y nunca inyectan el `DbContext` de otro módulo.
+
 ## Orden de migración
 
 1. Un contexto por módulo: `AccesoDbContext`, `InventarioDbContext`, `PersonalizacionDbContext`, `ClientesDbContext`, `NotificacionesDbContext`.

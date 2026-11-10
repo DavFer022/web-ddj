@@ -4,6 +4,7 @@ using SistemaDDJ.Web.Modules.Inventario.Features.ActualizarProveedor;
 using SistemaDDJ.Web.Modules.Inventario.Features.CambiarEstadoProveedor;
 using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarDashboardInventario;
 using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores;
+using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarAjusteOMerma;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCompraProveedor;
@@ -27,5 +28,6 @@ public static class InventarioModule
             .AddScoped<ConsultarDashboardInventario.Handler>()
             .AddScoped<RegistrarCompraProveedor.Handler>()
             .AddScoped<RegistrarVentaProductos.Handler>()
-            .AddScoped<RegistrarConsumoInsumos.Handler>();
+            .AddScoped<RegistrarConsumoInsumos.Handler>()
+            .AddScoped<RegistrarAjusteOMerma.Handler>();
 }

@@ -58,8 +58,8 @@ Registrar ajustes de inventario (entradas o salidas por conteo físico) y mermas
 ## 6. Tasks
 
 - [x] Confirmar con el usuario las dudas de la sección 4 (devoluciones, subtipo en merma y roles).
-- [ ] **Red:** escribir `AjustesYMermasTests.cs` y comprobar que falla.
-- [ ] Ampliar `IAccesoPublicApi` para validar rol autorizado del usuario.
-- [ ] **Green:** implementar `RegistrarAjusteOMerma` y registrarlo en `InventarioModule`.
-- [ ] Agregar el formulario de ajustes y mermas en la UI de Inventario.
-- [ ] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, hacer commit (`feat(inventario): HU-10 ...`) en `feature/inventario` y preparar el cierre/PR de la Épica 2 de Inventario.
+- [x] **Red:** escribir `AjustesYMermasTests.cs` y comprobar que falla.
+- [x] Ampliar `IAccesoPublicApi` para validar rol autorizado del usuario.
+- [x] **Green:** implementar `RegistrarAjusteOMerma` y registrarlo en `InventarioModule`.
+- [x] Agregar el formulario de ajustes y mermas en la UI de Inventario.
+- [x] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, hacer commit (`feat(inventario): HU-10 ...`) en `feature/inventario` y preparar el cierre/PR de la Épica 2 de Inventario. El PR se prepara al final del lote.
