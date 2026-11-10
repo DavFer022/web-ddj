@@ -80,7 +80,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 #### HU-08: Salida de inventario por venta de productos
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar la salida por venta de productos al público **Para** descontar existencias del inventario comercial y conservar el precio de venta aplicado
 

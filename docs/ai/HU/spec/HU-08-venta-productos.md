@@ -55,8 +55,8 @@ Registrar la salida por venta de productos al público mediante un `MOVIMIENTO_I
 ## 6. Tasks
 
 - [x] Confirmar con el usuario las dudas de la sección 4 (precio editable o fijo, y alcance del cargo a crédito).
-- [ ] **Red:** escribir `VentaProductosTests.cs` y comprobar que falla.
-- [ ] Crear `IClientesPublicApi` en `Modules/Clientes/PublicApi` y registrarla en `ClientesModule`.
-- [ ] **Green:** implementar `RegistrarVentaProductos` y registrarlo en `InventarioModule`.
-- [ ] Agregar el formulario de venta en la UI de Inventario.
-- [ ] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-08 ...`) en `feature/inventario`.
+- [x] **Red:** escribir `VentaProductosTests.cs` y comprobar que falla.
+- [x] Crear `IClientesPublicApi` en `Modules/Clientes/PublicApi` y registrarla en `ClientesModule`.
+- [x] **Green:** implementar `RegistrarVentaProductos` y registrarlo en `InventarioModule`.
+- [x] Agregar el formulario de venta en la UI de Inventario.
+- [x] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-08 ...`) en `feature/inventario`.
