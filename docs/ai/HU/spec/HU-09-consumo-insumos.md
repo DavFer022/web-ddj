@@ -50,8 +50,8 @@ Registrar los insumos efectivamente utilizados en un pedido mediante un `MOVIMIE
 ## 6. Tasks
 
 - [x] Confirmar con el usuario qué estados de orden permiten registrar consumos.
-- [ ] **Red:** escribir `ConsumoInsumosTests.cs` y comprobar que falla.
-- [ ] Crear `IPersonalizacionPublicApi` en `Modules/Personalizacion/PublicApi` y registrarla en `PersonalizacionModule`.
-- [ ] **Green:** implementar `RegistrarConsumoInsumos` y registrarlo en `InventarioModule`.
-- [ ] Agregar el formulario de consumo de insumos en la UI de Inventario.
-- [ ] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-09 ...`) en `feature/inventario`.
+- [x] **Red:** escribir `ConsumoInsumosTests.cs` y comprobar que falla.
+- [x] Crear `IPersonalizacionPublicApi` en `Modules/Personalizacion/PublicApi` y registrarla en `PersonalizacionModule`.
+- [x] **Green:** implementar `RegistrarConsumoInsumos` y registrarlo en `InventarioModule`.
+- [x] Agregar el formulario de consumo de insumos en la UI de Inventario.
+- [x] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-09 ...`) en `feature/inventario`.

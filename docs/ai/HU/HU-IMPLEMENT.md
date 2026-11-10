@@ -92,7 +92,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 #### HU-09: Salida de inventario por consumo de insumos en una orden de servicio
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar los insumos consumidos asociándolos a una orden de servicio **Para** descontar del inventario de taller exactamente lo utilizado en cada pedido
 

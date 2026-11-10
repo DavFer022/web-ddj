@@ -1,0 +1,181 @@
+@page "/inventario/consumos"
+@using Microsoft.EntityFrameworkCore
+@using SistemaDDJ.Web.Modules.Acceso.PublicApi
+@using SistemaDDJ.Web.Modules.Inventario.Data
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarStock
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarConsumoInsumos
+@using SistemaDDJ.Web.Modules.Personalizacion.PublicApi
+@inject InventarioDbContext Db
+@inject IAccesoPublicApi Acceso
+@inject IPersonalizacionPublicApi Personalizacion
+@inject RegistrarConsumoInsumos.Handler RegistrarConsumoHandler
+
+<PageTitle>Consumo de insumos | Sistema DD&amp;J</PageTitle>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Consumo de insumos</li>
+    </ol>
+</nav>
+
+<h1>Consumo de insumos</h1>
+
+@if (_usuarioActual is null)
+{
+    <div class="alert alert-warning">No hay un usuario activo para registrar el consumo.</div>
+}
+else
+{
+    <p class="text-muted">Registrado por: <strong>@_usuarioActual.NombreVisible</strong></p>
+}
+
+<ul class="text-danger">
+    @foreach (var error in _errores)
+    {
+        <li>@error</li>
+    }
+</ul>
+
+@if (!string.IsNullOrWhiteSpace(_mensaje))
+{
+    <div class="alert alert-success">@_mensaje</div>
+}
+
+<div class="row g-2 mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Orden de servicio</label>
+        <select class="form-select" @bind="_ordenServicioId">
+            <option value="">Seleccione una orden pendiente o en proceso...</option>
+            @foreach (var orden in _ordenes)
+            {
+                <option value="@orden.Id">@orden.NumeroOrden — @orden.Estado — vence @orden.VenceEn.LocalDateTime.ToString("d")</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Referencia</label>
+        <input class="form-control" @bind="_referencia" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Notas</label>
+        <input class="form-control" @bind="_notas" />
+    </div>
+</div>
+
+<h2 class="h4">Insumos consumidos</h2>
+<table class="table table-sm align-middle">
+    <thead>
+        <tr>
+            <th>Insumo</th>
+            <th class="text-end">Stock</th>
+            <th style="width: 9rem;">Cantidad</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < _lineas.Count; i++)
+        {
+            var indice = i;
+            var insumo = _insumos.FirstOrDefault(x => x.ArticuloId == _lineas[indice].ArticuloId);
+            <tr>
+                <td>
+                    <select class="form-select" @bind="_lineas[indice].ArticuloId">
+                        <option value="0">Seleccione...</option>
+                        @foreach (var opcion in _insumos)
+                        {
+                            <option value="@opcion.ArticuloId">@opcion.Codigo — @opcion.Nombre</option>
+                        }
+                    </select>
+                </td>
+                <td class="text-end">@(insumo?.Stock.ToString("0.###") ?? "—")</td>
+                <td><input type="number" step="0.001" class="form-control" @bind="_lineas[indice].Cantidad" /></td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => QuitarLinea(indice)">×</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarLinea">Agregar línea</button>
+
+<div>
+    <button class="btn btn-primary" disabled="@(_usuarioActual is null)" @onclick="GuardarAsync">Registrar consumo</button>
+</div>
+
+@code {
+    private sealed class LineaConsumo
+    {
+        public int ArticuloId { get; set; }
+        public decimal Cantidad { get; set; }
+    }
+
+    private sealed record InsumoOpcion(int ArticuloId, string Codigo, string Nombre, decimal Stock);
+
+    private UsuarioDto? _usuarioActual;
+    private IReadOnlyList<OrdenServicioResumenDto> _ordenes = [];
+    private List<InsumoOpcion> _insumos = [];
+    private Guid? _ordenServicioId;
+    private string? _referencia;
+    private string? _notas;
+    private List<LineaConsumo> _lineas = [new()];
+    private IReadOnlyList<string> _errores = [];
+    private string? _mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuarioActual = await Acceso.ObtenerUsuarioActualAsync();
+        _ordenes = await Personalizacion.ListarAbiertasAsync();
+        await CargarInsumosAsync();
+    }
+
+    private void AgregarLinea() => _lineas.Add(new LineaConsumo());
+
+    private void QuitarLinea(int indice)
+    {
+        _lineas.RemoveAt(indice);
+        if (_lineas.Count == 0) _lineas.Add(new LineaConsumo());
+    }
+
+    private async Task CargarInsumosAsync()
+    {
+        var articulos = await Db.Articulos
+            .Where(a => a.Activo && a.Tipo == ArticuloTipo.INSUMO)
+            .OrderBy(a => a.Nombre)
+            .ToListAsync();
+        var ids = articulos.Select(a => a.Id).ToList();
+        var saldos = await SaldosInventario.ObtenerSaldosAsync(Db, ids);
+        _insumos = articulos
+            .Select(a => new InsumoOpcion(a.Id, a.Codigo, a.Nombre, saldos.GetValueOrDefault(a.Id)))
+            .ToList();
+    }
+
+    private async Task GuardarAsync()
+    {
+        _errores = [];
+        _mensaje = null;
+        if (_usuarioActual is null) return;
+
+        var lineas = _lineas
+            .Where(l => l.ArticuloId != 0 || l.Cantidad != 0)
+            .Select(l => new RegistrarConsumoInsumos.Linea(l.ArticuloId, l.Cantidad))
+            .ToList();
+
+        var resultado = await RegistrarConsumoHandler.HandleAsync(
+            new RegistrarConsumoInsumos.Command(
+                _ordenServicioId ?? Guid.Empty,
+                _usuarioActual.Id,
+                _referencia,
+                _notas,
+                lineas));
+
+        _errores = resultado.Errores;
+        if (!resultado.Exitoso) return;
+
+        _mensaje = $"Consumo registrado con {lineas.Count} línea(s).";
+        _lineas = [new()];
+        _referencia = null;
+        _notas = null;
+        await CargarInsumosAsync();
+    }
+}

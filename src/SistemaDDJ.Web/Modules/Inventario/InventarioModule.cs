@@ -7,6 +7,7 @@ using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCompraProveedor;
+using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarConsumoInsumos;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarProveedor;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarVentaProductos;
 
@@ -25,5 +26,6 @@ public static class InventarioModule
             .AddScoped<ListarProveedores.Handler>()
             .AddScoped<ConsultarDashboardInventario.Handler>()
             .AddScoped<RegistrarCompraProveedor.Handler>()
-            .AddScoped<RegistrarVentaProductos.Handler>();
+            .AddScoped<RegistrarVentaProductos.Handler>()
+            .AddScoped<RegistrarConsumoInsumos.Handler>();
 }
