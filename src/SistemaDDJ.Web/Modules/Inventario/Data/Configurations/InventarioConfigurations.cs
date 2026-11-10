@@ -136,7 +136,7 @@ public sealed class DetalleMovimientoInventarioConfiguration : IEntityTypeConfig
         builder.Property(x => x.Cantidad).HasPrecision(18, 3);
         builder.Property(x => x.CostoUnitario).HasPrecision(18, 2);
         builder.Property(x => x.PrecioUnitario).HasPrecision(18, 2);
-        builder.HasOne<MovimientoInventario>().WithMany().HasForeignKey(x => x.MovimientoId);
+        builder.HasOne<MovimientoInventario>().WithMany(x => x.Detalles).HasForeignKey(x => x.MovimientoId);
         builder.HasOne<Articulo>().WithMany().HasForeignKey(x => x.ArticuloId);
 
         builder.ToTable(t =>

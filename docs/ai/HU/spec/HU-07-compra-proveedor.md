@@ -53,8 +53,8 @@ Registrar una compra a un proveedor activo mediante un `MOVIMIENTO_INVENTARIO` (
 ## 6. Tasks
 
 - [x] Confirmar las dudas de la sección 4 con el usuario.
-- [ ] **Red:** escribir `CompraProveedorTests.cs` y comprobar que falla.
-- [ ] Crear `IAccesoPublicApi` en `Modules/Acceso/PublicApi` y registrarla en `AccesoModule`.
-- [ ] **Green:** implementar `RegistrarCompraProveedor` y registrarlo en `InventarioModule`.
-- [ ] Agregar el formulario de compra en la UI de Inventario.
-- [ ] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-07 ...`) en `feature/inventario`.
+- [x] **Red:** escribir `CompraProveedorTests.cs` y comprobar que falla.
+- [x] Crear `IAccesoPublicApi` en `Modules/Acceso/PublicApi` y registrarla en `AccesoModule`.
+- [x] **Green:** implementar `RegistrarCompraProveedor` y registrarlo en `InventarioModule`.
+- [x] Agregar el formulario de compra en la UI de Inventario.
+- [x] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-07 ...`) en `feature/inventario`.

@@ -68,7 +68,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 #### HU-07: Entrada de inventario por compra a proveedor
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar una compra de proveedor que pueda incluir productos de venta, insumos o ambos en un mismo movimiento **Para** incrementar el stock y guardar el costo real pagado en esa compra
 

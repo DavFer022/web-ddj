@@ -6,6 +6,7 @@ using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarDashboardInventario;
 using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria;
+using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCompraProveedor;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarProveedor;
 
 namespace SistemaDDJ.Web.Modules.Inventario;
@@ -21,5 +22,6 @@ public static class InventarioModule
             .AddScoped<ActualizarProveedor.Handler>()
             .AddScoped<CambiarEstadoProveedor.Handler>()
             .AddScoped<ListarProveedores.Handler>()
-            .AddScoped<ConsultarDashboardInventario.Handler>();
+            .AddScoped<ConsultarDashboardInventario.Handler>()
+            .AddScoped<RegistrarCompraProveedor.Handler>();
 }

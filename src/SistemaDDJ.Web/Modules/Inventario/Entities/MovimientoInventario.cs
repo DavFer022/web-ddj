@@ -27,6 +27,7 @@ public sealed class MovimientoInventario
     public Guid? ClienteId { get; set; }
     public Guid? OrdenServicioId { get; set; }
     public int RegistradoPorUsuarioId { get; set; }
+    public List<DetalleMovimientoInventario> Detalles { get; set; } = [];
 }
 
 public sealed class DetalleMovimientoInventario
