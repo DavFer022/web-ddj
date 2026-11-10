@@ -83,6 +83,19 @@ public sealed class DashboardInventarioTests(BaseDatosPruebaInventario bd) : IAs
     }
 
     [Fact]
+    public async Task ConsultarDashboard_ArticuloInactivo_SeSigueMostrando()
+    {
+        await CrearArticuloAsync(ArticuloTipo.PRODUCTO, "Producto dado de baja", activo: false);
+
+        var resultado = await new ConsultarDashboardInventario.Handler(_db)
+            .HandleAsync(new ConsultarDashboardInventario.Consulta());
+
+        var articulo = Assert.Single(resultado.Articulos);
+        Assert.False(articulo.Activo);
+        Assert.Equal(EstadoStock.AGOTADO, articulo.Estado);
+    }
+
+    [Fact]
     public async Task ConsultarDashboard_MarcaArticuloConBajoStockSegunUmbral()
     {
         var productoId = await CrearArticuloAsync(ArticuloTipo.PRODUCTO, "Producto con bajo stock", stockMinimo: 5);
@@ -100,7 +113,7 @@ public sealed class DashboardInventarioTests(BaseDatosPruebaInventario bd) : IAs
         Assert.Equal(1, resultado.Productos.Bajos);
     }
 
-    private async Task<int> CrearArticuloAsync(ArticuloTipo tipo, string nombre, decimal stockMinimo = 0)
+    private async Task<int> CrearArticuloAsync(ArticuloTipo tipo, string nombre, decimal stockMinimo = 0, bool activo = true)
     {
         var categoria = new CategoriaArticulo { Nombre = $"Categoría {Guid.NewGuid():N}" };
         _db.CategoriasArticulo.Add(categoria);
@@ -114,6 +127,7 @@ public sealed class DashboardInventarioTests(BaseDatosPruebaInventario bd) : IAs
             Tipo = tipo,
             CostoUnitario = 4m,
             StockMinimo = stockMinimo,
+            Activo = activo,
             CategoriaId = categoria.Id
         };
         _db.Articulos.Add(articulo);
