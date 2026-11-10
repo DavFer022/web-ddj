@@ -11,118 +11,138 @@
 
 <PageTitle>Proveedores | Sistema DD&amp;J</PageTitle>
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Proveedores</li>
-    </ol>
-</nav>
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
 
-<h1>Proveedores</h1>
-
-<ul class="text-danger">
-    @foreach (var error in _errores)
-    {
-        <li>@error</li>
-    }
-</ul>
+<MudText Typo="Typo.h3" Class="font-weight-bold">Proveedores</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Administra contactos y mantén disponibles solo los proveedores activos para nuevas compras.
+</MudText>
 
 @if (!string.IsNullOrWhiteSpace(_mensaje))
 {
-    <div class="alert alert-success">@_mensaje</div>
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+@if (_errores.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        @foreach (var error in _errores)
+        {
+            <div>@error</div>
+        }
+    </MudAlert>
 }
 
-<div class="row">
-    <div class="col-lg-5">
-        <h2>@(_form.ProveedorId is null ? "Nuevo proveedor" : "Editar proveedor")</h2>
-        <EditForm Model="_form" OnValidSubmit="GuardarAsync" FormName="proveedor">
-            <div class="mb-2">
-                <label class="form-label">Razón social</label>
-                <InputText class="form-control" @bind-Value="_form.RazonSocial" />
-            </div>
-            <div class="mb-2">
-                <label class="form-label">Identificación fiscal</label>
-                <InputText class="form-control" @bind-Value="_form.IdentificacionFiscal" />
-            </div>
-            <div class="mb-2">
-                <label class="form-label">Correo</label>
-                <InputText class="form-control" @bind-Value="_form.Correo" />
-            </div>
+<MudGrid>
+    <MudItem xs="12" lg="5">
+        <MudPaper Class="pa-5" Elevation="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
+                    <MudIcon Icon="@(_form.ProveedorId is null ? Icons.Material.Filled.AddBusiness : Icons.Material.Filled.Edit)" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6">@(_form.ProveedorId is null ? "Nuevo proveedor" : "Editar proveedor")</MudText>
+            </MudStack>
 
-            <h3 class="h5 mt-3">Teléfonos</h3>
+            <MudTextField T="string" @bind-Value="_form.RazonSocial" Label="Razón social"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+            <MudTextField T="string" @bind-Value="_form.IdentificacionFiscal" Label="Identificación fiscal"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-3" />
+            <MudTextField T="string" @bind-Value="_form.Correo" Label="Correo"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Teléfonos</MudText>
             @for (var i = 0; i < _form.Telefonos.Count; i++)
             {
                 var indice = i;
-                <div class="row g-2 mb-2 align-items-end">
-                    <div class="col-5">
-                        <label class="form-label">Número</label>
-                        <InputText class="form-control" @bind-Value="_form.Telefonos[indice].Numero" />
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">Etiqueta</label>
-                        <InputText class="form-control" @bind-Value="_form.Telefonos[indice].Etiqueta" />
-                    </div>
-                    <div class="col-2">
-                        <div class="form-check">
-                            <InputCheckbox class="form-check-input" @bind-Value="_form.Telefonos[indice].EsPrincipal" />
-                            <label class="form-check-label">Principal</label>
-                        </div>
-                    </div>
-                    <div class="col-1">
-                        <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => QuitarTelefono(indice)">×</button>
-                    </div>
-                </div>
+                <MudGrid Class="mb-2" Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string" @bind-Value="_form.Telefonos[indice].Numero" Label="Número"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" @bind-Value="_form.Telefonos[indice].Etiqueta" Label="Etiqueta"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="8" sm="3" Class="d-flex align-center">
+                        <MudCheckBox T="bool" @bind-Value="_form.Telefonos[indice].EsPrincipal"
+                                     Label="Principal" Dense="true" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="4" sm="2" Class="d-flex align-center justify-end">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                       aria-label="Quitar teléfono" OnClick="() => QuitarTelefono(indice)" />
+                    </MudItem>
+                </MudGrid>
             }
-            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarTelefono">Agregar teléfono</button>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary" type="submit">Guardar</button>
+            <MudButton OnClick="AgregarTelefono" Variant="Variant.Text" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Phone" Size="Size.Small" Class="mb-4">
+                Agregar teléfono
+            </MudButton>
+
+            <MudStack Row="true" Spacing="2">
+                <MudButton OnClick="GuardarAsync" Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save">Guardar</MudButton>
                 @if (_form.ProveedorId is not null)
                 {
-                    <button type="button" class="btn btn-outline-secondary" @onclick="LimpiarFormulario">Cancelar edición</button>
+                    <MudButton OnClick="LimpiarFormulario" Variant="Variant.Outlined" Color="Color.Default">
+                        Cancelar edición
+                    </MudButton>
                 }
-            </div>
-        </EditForm>
-    </div>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
 
-    <div class="col-lg-7">
-        <h2>Proveedores registrados</h2>
-        <table class="table table-sm align-middle">
-            <thead>
-                <tr>
-                    <th>Razón social</th>
-                    <th>Identificación fiscal</th>
-                    <th>Teléfonos</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var proveedor in _proveedores)
-                {
-                    <tr class="@(proveedor.Activo ? null : "table-secondary")">
-                        <td>
-                            <strong>@proveedor.RazonSocial</strong>
-                            @if (!string.IsNullOrWhiteSpace(proveedor.Correo))
-                            {
-                                <div class="small text-muted">@proveedor.Correo</div>
-                            }
-                        </td>
-                        <td>@(proveedor.IdentificacionFiscal ?? "—")</td>
-                        <td>@(proveedor.Telefonos.Count == 0 ? "—" : string.Join(", ", proveedor.Telefonos.Select(t => t.Numero)))</td>
-                        <td>@(proveedor.Activo ? "Activo" : "Inactivo")</td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => Editar(proveedor)">Editar</button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstadoAsync(proveedor)">
-                                @(proveedor.Activo ? "Desactivar" : "Activar")
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+    <MudItem xs="12" lg="7">
+        <MudPaper Elevation="1">
+            <MudTable T="ProveedorDto" Items="_proveedores" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                <HeaderContent>
+                    <MudTh>Proveedor</MudTh>
+                    <MudTh>Identificación fiscal</MudTh>
+                    <MudTh>Teléfonos</MudTh>
+                    <MudTh>Estado</MudTh>
+                    <MudTh Style="text-align: right;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Proveedor">
+                        <MudText Typo="Typo.body2"><strong>@context.RazonSocial</strong></MudText>
+                        @if (!string.IsNullOrWhiteSpace(context.Correo))
+                        {
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.Correo</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Identificación fiscal">@(context.IdentificacionFiscal ?? "—")</MudTd>
+                    <MudTd DataLabel="Teléfonos">
+                        @(context.Telefonos.Count == 0
+                            ? "—"
+                            : string.Join(", ", context.Telefonos.Select(t => t.Numero)))
+                    </MudTd>
+                    <MudTd DataLabel="Estado">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                                 Color="@(context.Activo ? Color.Success : Color.Default)">
+                            @(context.Activo ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Acciones" Style="text-align: right;">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
+                                           OnClick="() => Editar(context)" />
+                        </MudTooltip>
+                        <MudTooltip Text="@(context.Activo ? "Desactivar" : "Activar")">
+                            <MudIconButton Icon="@(context.Activo ? Icons.Material.Filled.Block : Icons.Material.Filled.CheckCircle)"
+                                           Color="@(context.Activo ? Color.Error : Color.Success)" Size="Size.Small"
+                                           OnClick="() => CambiarEstadoAsync(context)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Aún no hay proveedores registrados.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
     private sealed class FormularioProveedor
@@ -193,7 +213,8 @@
         else
         {
             var resultado = await ActualizarHandler.HandleAsync(
-                new ActualizarProveedor.Command(_form.ProveedorId.Value, _form.RazonSocial, _form.IdentificacionFiscal, _form.Correo, telefonos));
+                new ActualizarProveedor.Command(_form.ProveedorId.Value, _form.RazonSocial,
+                    _form.IdentificacionFiscal, _form.Correo, telefonos));
             _errores = resultado.Errores;
             if (!resultado.Exitoso) return;
             _mensaje = "Proveedor actualizado.";

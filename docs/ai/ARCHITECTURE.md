@@ -28,6 +28,8 @@ src/SistemaDDJ.Web/
       DevelopmentDataSeeder.cs   datos de prueba (solo Development)
       Integracion/               IntegracionDbContext y migraciones de FK entre esquemas
   Components/           shell de la aplicación (layout, rutas, páginas genéricas)
+    Theme/              tema global de MudBlazor
+    Shared/             componentes reutilizables de la interfaz
 ```
 
 ## Contratos entre módulos

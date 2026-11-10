@@ -20,12 +20,14 @@
 - `Infrastructure/Persistence` contiene solo helpers técnicos compartidos (convenciones de nombres, registro de contextos, integración). No pongas lógica de negocio allí ni crees carpetas `Shared` de negocio.
 - Identificadores: `int` autoincremental para catálogos y tablas de relación. `uuid` (UUIDv7 con `Guid.CreateVersion7()`) solo para `MOVIMIENTO_INVENTARIO`, `CLIENTE`, `ORDEN_SERVICIO`, `MOVIMIENTO_CUENTA_CLIENTE`, `NOTIFICACION` y `MOVIMIENTO_FIDELIDAD_CLIENTE`. Cada FK usa el tipo de la clave que referencia.
 - Las bajas son lógicas (`activo = false`). No borres filas con historial; las FK usan `ON DELETE RESTRICT`.
-- Las páginas actuales de los módulos son placeholders; no asumas que autenticación o lógica de negocio ya están implementadas.
+- Inventario ya tiene UI y lógica funcional; `Acceso`, `Personalizacion` y `Clientes` siguen como placeholders. No asumas que la autenticación está implementada.
+- La UI usa MudBlazor. El tema global vive en `Components/Theme/DdjTheme.cs`; los componentes compartidos van en `Components/Shared`.
 - No guardes contraseñas ni cadenas de conexión reales en archivos versionados; usa .NET User Secrets localmente.
 
 ## Stack y arquitectura
 
 - Blazor y ASP.NET Core sobre .NET 10
+- MudBlazor para la interfaz (tema propio, layout y componentes)
 - PostgreSQL con EF Core Code First, un `DbContext` por módulo
 - Monolito modular; VSA dentro de cada módulo
 

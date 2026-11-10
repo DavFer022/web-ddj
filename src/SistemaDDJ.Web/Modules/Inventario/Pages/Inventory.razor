@@ -12,210 +12,263 @@
 
 <PageTitle>Inventario | Sistema DD&amp;J</PageTitle>
 
-<h1>Inventario</h1>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-4 flex-wrap gap-3">
+    <div>
+        <MudText Typo="Typo.h3" Class="font-weight-bold">Inventario</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+            Controla existencias, compras, ventas, consumos y ajustes del taller.
+        </MudText>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <MudButton Href="/inventario/proveedores" Variant="Variant.Outlined" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.LocalShipping">Proveedores</MudButton>
+        <MudButton Href="/inventario/compras" Variant="Variant.Outlined" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.AddShoppingCart">Compra</MudButton>
+        <MudButton Href="/inventario/ventas" Variant="Variant.Outlined" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.PointOfSale">Venta</MudButton>
+        <MudButton Href="/inventario/consumos" Variant="Variant.Outlined" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.Build">Consumo</MudButton>
+        <MudButton Href="/inventario/ajustes" Variant="Variant.Outlined" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.Tune">Ajustes</MudButton>
+    </div>
+</MudStack>
 
-<div class="d-flex flex-wrap gap-2 mb-3">
-    <a class="btn btn-outline-primary btn-sm" href="/inventario/proveedores">Proveedores</a>
-    <a class="btn btn-outline-primary btn-sm" href="/inventario/compras">Compra a proveedor</a>
-    <a class="btn btn-outline-primary btn-sm" href="/inventario/ventas">Venta de productos</a>
-    <a class="btn btn-outline-primary btn-sm" href="/inventario/consumos">Consumo de insumos</a>
-    <a class="btn btn-outline-primary btn-sm" href="/inventario/ajustes">Ajustes y mermas</a>
-</div>
+<MudGrid Class="mb-4">
+    <MudItem xs="12" md="6">
+        <MudPaper Class="metric-card pa-4" Elevation="1">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.overline" Class="mud-text-secondary">Productos de venta</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">@(_dashboard?.Productos.Total ?? 0)</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">artículos registrados</MudText>
+                </div>
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+                </MudAvatar>
+            </MudStack>
+            <MudDivider Class="my-3" />
+            <MudStack Row="true" Spacing="2">
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">
+                    Agotados: @(_dashboard?.Productos.Agotados ?? 0)
+                </MudChip>
+                <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Small">
+                    Bajo stock: @(_dashboard?.Productos.Bajos ?? 0)
+                </MudChip>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="metric-card metric-success pa-4" Elevation="1">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.overline" Class="mud-text-secondary">Insumos de taller</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">@(_dashboard?.Insumos.Total ?? 0)</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">artículos registrados</MudText>
+                </div>
+                <MudAvatar Color="Color.Tertiary" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Brush" />
+                </MudAvatar>
+            </MudStack>
+            <MudDivider Class="my-3" />
+            <MudStack Row="true" Spacing="2">
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">
+                    Agotados: @(_dashboard?.Insumos.Agotados ?? 0)
+                </MudChip>
+                <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Small">
+                    Bajo stock: @(_dashboard?.Insumos.Bajos ?? 0)
+                </MudChip>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
-<h2>Resumen de inventario</h2>
-
-<div class="row g-3 mb-3">
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h3 class="h5">Productos de venta</h3>
-                <p class="mb-2">Artículos registrados: <strong>@(_dashboard?.Productos.Total ?? 0)</strong></p>
-                <span class="badge bg-danger">Agotados: @(_dashboard?.Productos.Agotados ?? 0)</span>
-                <span class="badge bg-warning text-dark">Bajo stock: @(_dashboard?.Productos.Bajos ?? 0)</span>
-            </div>
+<MudPaper Outlined="true" Class="pa-4 mb-4" Elevation="0">
+    <div class="d-flex flex-wrap align-center gap-3">
+        <div class="d-flex gap-1">
+            <MudButton Size="Size.Small" Variant="@(_tipoFiltro is null ? Variant.Filled : Variant.Outlined)"
+                       Color="@(_tipoFiltro is null ? Color.Primary : Color.Default)"
+                       OnClick="() => CambiarTipoAsync(null)">Todos</MudButton>
+            <MudButton Size="Size.Small" Variant="@(_tipoFiltro == ArticuloTipo.PRODUCTO ? Variant.Filled : Variant.Outlined)"
+                       Color="@(_tipoFiltro == ArticuloTipo.PRODUCTO ? Color.Primary : Color.Default)"
+                       OnClick="() => CambiarTipoAsync(ArticuloTipo.PRODUCTO)">Productos</MudButton>
+            <MudButton Size="Size.Small" Variant="@(_tipoFiltro == ArticuloTipo.INSUMO ? Variant.Filled : Variant.Outlined)"
+                       Color="@(_tipoFiltro == ArticuloTipo.INSUMO ? Color.Primary : Color.Default)"
+                       OnClick="() => CambiarTipoAsync(ArticuloTipo.INSUMO)">Insumos</MudButton>
         </div>
+        <MudTextField T="string"
+                      @bind-Value="_busqueda"
+                      Placeholder="Buscar por código o nombre"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Class="flex-grow-1"
+                      Style="min-width: 220px; max-width: 380px;" />
+        <MudButton OnClick="CargarDashboardAsync" Variant="Variant.Filled" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.Search">Buscar</MudButton>
+        <MudCheckBox T="bool" @bind-Value="_soloAlertas" Label="Solo alertas" Dense="true" Color="Color.Warning" />
+        <MudButton OnClick="CargarDashboardAsync" Variant="Variant.Text" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.Refresh">Actualizar</MudButton>
     </div>
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h3 class="h5">Insumos de taller</h3>
-                <p class="mb-2">Artículos registrados: <strong>@(_dashboard?.Insumos.Total ?? 0)</strong></p>
-                <span class="badge bg-danger">Agotados: @(_dashboard?.Insumos.Agotados ?? 0)</span>
-                <span class="badge bg-warning text-dark">Bajo stock: @(_dashboard?.Insumos.Bajos ?? 0)</span>
-            </div>
-        </div>
-    </div>
-</div>
+</MudPaper>
 
-<div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-    <div class="btn-group" role="group">
-        <button class="btn btn-sm @(_tipoFiltro is null ? "btn-primary" : "btn-outline-primary")" @onclick="() => CambiarTipoAsync(null)">Todos</button>
-        <button class="btn btn-sm @(_tipoFiltro == ArticuloTipo.PRODUCTO ? "btn-primary" : "btn-outline-primary")" @onclick="() => CambiarTipoAsync(ArticuloTipo.PRODUCTO)">Productos</button>
-        <button class="btn btn-sm @(_tipoFiltro == ArticuloTipo.INSUMO ? "btn-primary" : "btn-outline-primary")" @onclick="() => CambiarTipoAsync(ArticuloTipo.INSUMO)">Insumos</button>
-    </div>
-    <div class="input-group" style="max-width: 22rem;">
-        <input class="form-control form-control-sm" placeholder="Buscar por código o nombre" @bind="_busqueda" @bind:event="oninput" />
-        <button class="btn btn-outline-secondary btn-sm" @onclick="CargarDashboardAsync">Buscar</button>
-    </div>
-    <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="soloAlertas" @bind="_soloAlertas" @bind:after="CargarDashboardAsync" />
-        <label class="form-check-label" for="soloAlertas">Solo agotados y bajo stock</label>
-    </div>
-</div>
-
-@if (_dashboard is null)
-{
-    <p class="text-muted">Cargando resumen...</p>
-}
-else if (_dashboard.Articulos.Count == 0)
-{
-    <p class="text-muted">No hay artículos que coincidan con el filtro.</p>
-}
-else
-{
-    <table class="table table-sm align-middle">
-        <thead>
-            <tr>
-                <th>Artículo</th>
-                <th>Tipo</th>
-                <th>Categoría</th>
-                <th class="text-end">Stock</th>
-                <th class="text-end">Mínimo</th>
-                <th>Estado</th>
-                <th>Detalle</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var articulo in _dashboard.Articulos)
-            {
-                <tr class="@ClaseFila(articulo.Estado)">
-                    <td>
-                        <strong>@articulo.Codigo</strong> — @articulo.Nombre
-                        @if (!articulo.Activo)
-                        {
-                            <span class="badge bg-secondary">Inactivo</span>
-                        }
-                    </td>
-                    <td>@articulo.Tipo</td>
-                    <td>@articulo.Categoria</td>
-                    <td class="text-end">@articulo.Stock.ToString("0.###") @articulo.Unidad</td>
-                    <td class="text-end">@articulo.StockMinimo.ToString("0.###")</td>
-                    <td><span class="badge @ClaseBadge(articulo.Estado)">@articulo.Estado</span></td>
-                    <td>
-                        @if (articulo.Tipo == ArticuloTipo.PRODUCTO)
-                        {
-                            <span>@articulo.Sku · @(articulo.PrecioVenta?.ToString("C") ?? "—")</span>
-                        }
-                        else
-                        {
-                            <span>@articulo.DescripcionInsumo</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-<h2>Catálogo de inventario</h2>
-
-<div class="row">
-    <div class="col-md-5">
-        <h2>Nueva categoría</h2>
-        <EditForm Model="_categoria" OnValidSubmit="GuardarCategoriaAsync" FormName="categoria">
-            <div class="mb-2">
-                <label class="form-label">Nombre</label>
-                <InputText class="form-control" @bind-Value="_categoria.Nombre" />
-            </div>
-            <div class="mb-2">
-                <label class="form-label">Descripción</label>
-                <InputText class="form-control" @bind-Value="_categoria.Descripcion" />
-            </div>
-            <button class="btn btn-primary" type="submit">Guardar categoría</button>
-        </EditForm>
-        <ul class="text-danger mt-2">
-            @foreach (var error in _erroresCategoria)
-            {
-                <li>@error</li>
-            }
-        </ul>
-    </div>
-
-    <div class="col-md-7">
-        <h2>Nuevo artículo</h2>
-        <EditForm Model="_articulo" OnValidSubmit="GuardarArticuloAsync" FormName="articulo">
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <label class="form-label">Tipo</label>
-                    <InputSelect class="form-select" @bind-Value="_articulo.Tipo">
-                        <option value="@ArticuloTipo.PRODUCTO">Producto de venta</option>
-                        <option value="@ArticuloTipo.INSUMO">Insumo de personalización</option>
-                    </InputSelect>
-                </div>
-                <div class="col-md-6 mb-2">
-                    <label class="form-label">Categoría</label>
-                    <InputSelect class="form-select" @bind-Value="_articulo.CategoriaId">
-                        <option value="0">Seleccione...</option>
-                        @foreach (var categoria in _categorias)
-                        {
-                            <option value="@categoria.Id">@categoria.Nombre</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="col-md-6 mb-2">
-                    <label class="form-label">Código</label>
-                    <InputText class="form-control" @bind-Value="_articulo.Codigo" />
-                </div>
-                <div class="col-md-6 mb-2">
-                    <label class="form-label">Nombre</label>
-                    <InputText class="form-control" @bind-Value="_articulo.Nombre" />
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label class="form-label">Unidad</label>
-                    <InputSelect class="form-select" @bind-Value="_articulo.Unidad">
-                        @foreach (var unidad in Enum.GetValues<UnidadMedida>())
-                        {
-                            <option value="@unidad">@unidad</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <label class="form-label">Costo unitario</label>
-                    <InputNumber class="form-control" @bind-Value="_articulo.CostoUnitario" />
-                </div>
-                <div class="col-md-3 mb-2">
-                    <label class="form-label">Stock mínimo</label>
-                    <InputNumber class="form-control" @bind-Value="_articulo.StockMinimo" />
-                </div>
-                @if (_articulo.Tipo == ArticuloTipo.PRODUCTO)
+<MudPaper Elevation="1" Class="mb-6">
+    <MudTable T="ConsultarDashboardInventario.ArticuloStockDto"
+              Items="ArticulosDashboard"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Artículo</MudTh>
+            <MudTh>Tipo</MudTh>
+            <MudTh>Categoría</MudTh>
+            <MudTh Style="text-align: right; white-space: nowrap;">Stock</MudTh>
+            <MudTh Style="text-align: right; white-space: nowrap;">Mínimo</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Detalle</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Artículo">
+                <MudText Typo="Typo.body2"><strong>@context.Codigo</strong> — @context.Nombre</MudText>
+                @if (!context.Activo)
                 {
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">SKU</label>
-                        <InputText class="form-control" @bind-Value="_articulo.Sku" />
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label">Precio de venta</label>
-                        <InputNumber class="form-control" @bind-Value="_articulo.PrecioVenta" />
-                    </div>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Inactivo</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
+            <MudTd DataLabel="Categoría">@context.Categoria</MudTd>
+            <MudTd DataLabel="Stock" Style="text-align: right; white-space: nowrap;">@context.Stock.ToString("0.###") @context.Unidad</MudTd>
+            <MudTd DataLabel="Mínimo" Style="text-align: right; white-space: nowrap;">@context.StockMinimo.ToString("0.###")</MudTd>
+            <MudTd DataLabel="Estado">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="@ColorEstado(context.Estado)">
+                    @context.Estado
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Detalle">
+                @if (context.Tipo == ArticuloTipo.PRODUCTO)
+                {
+                    <span>@context.Sku · @(context.PrecioVenta?.ToString("C") ?? "—")</span>
                 }
                 else
                 {
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label">Descripción del insumo</label>
-                        <InputText class="form-control" @bind-Value="_articulo.Descripcion" />
-                    </div>
+                    <span>@context.DescripcionInsumo</span>
                 }
-            </div>
-            <button class="btn btn-primary" type="submit">Guardar artículo</button>
-        </EditForm>
-        <ul class="text-danger mt-2">
-            @foreach (var error in _erroresArticulo)
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">No hay artículos que coincidan con el filtro.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        </LoadingContent>
+    </MudTable>
+</MudPaper>
+
+<MudText Typo="Typo.h5" Class="font-weight-bold mb-3">Catálogo de inventario</MudText>
+
+<MudGrid>
+    <MudItem xs="12" lg="4">
+        <MudPaper Class="pa-5" Elevation="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6">Nueva categoría</MudText>
+            </MudStack>
+            <MudTextField T="string" @bind-Value="_categoria.Nombre" Label="Nombre" Variant="Variant.Outlined" Class="mb-3" />
+            <MudTextField T="string" @bind-Value="_categoria.Descripcion" Label="Descripción" Variant="Variant.Outlined" Class="mb-3" />
+            <MudButton OnClick="GuardarCategoriaAsync" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save">Guardar categoría</MudButton>
+            @if (_erroresCategoria.Count > 0)
             {
-                <li>@error</li>
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    @foreach (var error in _erroresCategoria)
+                    {
+                        <div>@error</div>
+                    }
+                </MudAlert>
             }
-        </ul>
-    </div>
-</div>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" lg="8">
+        <MudPaper Class="pa-5" Elevation="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudAvatar Color="Color.Tertiary" Variant="Variant.Filled">
+                    <MudIcon Icon="@Icons.Material.Filled.AddBox" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6">Nuevo artículo</MudText>
+            </MudStack>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="ArticuloTipo" @bind-Value="_articulo.Tipo" Label="Tipo" Variant="Variant.Outlined" Dense="true">
+                        <MudSelectItem T="ArticuloTipo" Value="ArticuloTipo.PRODUCTO">Producto de venta</MudSelectItem>
+                        <MudSelectItem T="ArticuloTipo" Value="ArticuloTipo.INSUMO">Insumo de personalización</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="int" @bind-Value="_articulo.CategoriaId" Label="Categoría" Variant="Variant.Outlined" Dense="true">
+                        <MudSelectItem T="int" Value="0">Seleccione...</MudSelectItem>
+                        @foreach (var categoria in _categorias)
+                        {
+                            <MudSelectItem T="int" Value="@categoria.Id">@categoria.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" @bind-Value="_articulo.Codigo" Label="Código" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" @bind-Value="_articulo.Nombre" Label="Nombre" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect T="UnidadMedida" @bind-Value="_articulo.Unidad" Label="Unidad" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var unidad in Enum.GetValues<UnidadMedida>())
+                        {
+                            <MudSelectItem T="UnidadMedida" Value="@unidad">@unidad</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal" @bind-Value="_articulo.CostoUnitario" Label="Costo unitario"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal" @bind-Value="_articulo.StockMinimo" Label="Stock mínimo"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                @if (_articulo.Tipo == ArticuloTipo.PRODUCTO)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" @bind-Value="_articulo.Sku" Label="SKU" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField T="decimal?" @bind-Value="_articulo.PrecioVenta" Label="Precio de venta"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12">
+                        <MudTextField T="string" @bind-Value="_articulo.Descripcion" Label="Descripción del insumo"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                }
+            </MudGrid>
+            <MudButton OnClick="GuardarArticuloAsync" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save" Class="mt-4">Guardar artículo</MudButton>
+            @if (_erroresArticulo.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    @foreach (var error in _erroresArticulo)
+                    {
+                        <div>@error</div>
+                    }
+                </MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
     private sealed class FormularioCategoria
@@ -248,6 +301,9 @@ else
     private string? _busqueda;
     private bool _soloAlertas;
 
+    private IReadOnlyList<ConsultarDashboardInventario.ArticuloStockDto> ArticulosDashboard =>
+        _dashboard?.Articulos ?? [];
+
     protected override async Task OnInitializedAsync()
     {
         await CargarCategoriasAsync();
@@ -264,18 +320,11 @@ else
         await CargarDashboardAsync();
     }
 
-    private static string ClaseFila(EstadoStock estado) => estado switch
+    private static Color ColorEstado(EstadoStock estado) => estado switch
     {
-        EstadoStock.AGOTADO => "table-danger",
-        EstadoStock.BAJO => "table-warning",
-        _ => string.Empty
-    };
-
-    private static string ClaseBadge(EstadoStock estado) => estado switch
-    {
-        EstadoStock.AGOTADO => "bg-danger",
-        EstadoStock.BAJO => "bg-warning text-dark",
-        _ => "bg-success"
+        EstadoStock.AGOTADO => Color.Error,
+        EstadoStock.BAJO => Color.Warning,
+        _ => Color.Success
     };
 
     private async Task CargarCategoriasAsync() =>
@@ -283,7 +332,8 @@ else
 
     private async Task GuardarCategoriaAsync()
     {
-        var resultado = await RegistrarCategoriaHandler.HandleAsync(new RegistrarCategoria.Command(_categoria.Nombre, _categoria.Descripcion));
+        var resultado = await RegistrarCategoriaHandler.HandleAsync(
+            new RegistrarCategoria.Command(_categoria.Nombre, _categoria.Descripcion));
         _erroresCategoria = resultado.Errores;
         if (resultado.Exitoso)
         {
@@ -296,8 +346,8 @@ else
     private async Task GuardarArticuloAsync()
     {
         var comando = new RegistrarArticulo.Command(
-            _articulo.Codigo, _articulo.Nombre, _articulo.Unidad, _articulo.CostoUnitario, _articulo.CategoriaId, _articulo.Tipo,
-            _articulo.PrecioVenta, _articulo.Sku, _articulo.Descripcion, _articulo.StockMinimo);
+            _articulo.Codigo, _articulo.Nombre, _articulo.Unidad, _articulo.CostoUnitario, _articulo.CategoriaId,
+            _articulo.Tipo, _articulo.PrecioVenta, _articulo.Sku, _articulo.Descripcion, _articulo.StockMinimo);
         var resultado = await RegistrarArticuloHandler.HandleAsync(comando);
         _erroresArticulo = resultado.Errores;
         if (resultado.Exitoso)

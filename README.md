@@ -1,6 +1,6 @@
 # Sistema DD&J
 
-Aplicación web para la gestión de una tienda de ropa y personalización, construida con Blazor, ASP.NET Core, EF Core y PostgreSQL.
+Aplicación web para la gestión de una tienda de ropa y personalización, construida con Blazor, ASP.NET Core, EF Core, PostgreSQL y MudBlazor.
 
 ## Requisitos
 

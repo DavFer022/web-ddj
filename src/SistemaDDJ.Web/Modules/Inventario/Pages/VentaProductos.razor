@@ -13,99 +13,114 @@
 
 <PageTitle>Venta de productos | Sistema DD&amp;J</PageTitle>
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Venta de productos</li>
-    </ol>
-</nav>
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
 
-<h1>Venta de productos</h1>
+<MudText Typo="Typo.h3" Class="font-weight-bold">Venta de productos</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Descuenta existencias del inventario comercial y guarda el precio aplicado.
+</MudText>
 
 @if (_usuarioActual is null)
 {
-    <div class="alert alert-warning">No hay un usuario activo para registrar la venta.</div>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        No hay un usuario activo para registrar la venta.
+    </MudAlert>
 }
 else
 {
-    <p class="text-muted">Registrada por: <strong>@_usuarioActual.NombreVisible</strong></p>
+    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Class="mb-3"
+             Icon="@Icons.Material.Filled.Person">
+        Registrada por: @_usuarioActual.NombreVisible
+    </MudChip>
 }
-
-<ul class="text-danger">
-    @foreach (var error in _errores)
-    {
-        <li>@error</li>
-    }
-</ul>
 
 @if (!string.IsNullOrWhiteSpace(_mensaje))
 {
-    <div class="alert alert-success">@_mensaje</div>
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+@if (_errores.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        @foreach (var error in _errores)
+        {
+            <div>@error</div>
+        }
+    </MudAlert>
 }
 
-<div class="row g-2 mb-3">
-    <div class="col-md-5">
-        <label class="form-label">Cliente (opcional)</label>
-        <select class="form-select" @bind="_clienteId">
-            <option value="">Sin cliente</option>
-            @foreach (var cliente in _clientes)
-            {
-                <option value="@cliente.Id">@cliente.Nombre @cliente.Apellido</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Referencia</label>
-        <input class="form-control" @bind="_referencia" />
-    </div>
-    <div class="col-md-3 d-flex align-items-end">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="esCredito" @bind="_esCredito" />
-            <label class="form-check-label" for="esCredito">Venta a crédito</label>
-        </div>
-    </div>
-</div>
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudSelect T="Guid?" @bind-Value="_clienteId" Label="Cliente (opcional)"
+                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem T="Guid?" Value="@((Guid?)null)">Sin cliente</MudSelectItem>
+                @foreach (var cliente in _clientes)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)cliente.Id)">
+                        @cliente.Nombre @cliente.Apellido
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField T="string" @bind-Value="_referencia" Label="Referencia"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" md="3" Class="d-flex align-center">
+            <MudCheckBox T="bool" @bind-Value="_esCredito" Label="Venta a crédito"
+                         Dense="true" Color="Color.Warning" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-<h2 class="h4">Productos</h2>
-<table class="table table-sm align-middle">
-    <thead>
-        <tr>
-            <th>Producto</th>
-            <th class="text-end">Precio</th>
-            <th class="text-end">Stock</th>
-            <th style="width: 9rem;">Cantidad</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (var i = 0; i < _lineas.Count; i++)
-        {
-            var indice = i;
-            var producto = _productos.FirstOrDefault(p => p.ArticuloId == _lineas[indice].ArticuloId);
-            <tr>
-                <td>
-                    <select class="form-select" @bind="_lineas[indice].ArticuloId">
-                        <option value="0">Seleccione...</option>
-                        @foreach (var opcion in _productos)
-                        {
-                            <option value="@opcion.ArticuloId">@opcion.Codigo — @opcion.Nombre (@opcion.Sku)</option>
-                        }
-                    </select>
-                </td>
-                <td class="text-end">@(producto?.PrecioVenta.ToString("C") ?? "—")</td>
-                <td class="text-end">@(producto?.Stock.ToString("0.###") ?? "—")</td>
-                <td><input type="number" step="0.001" class="form-control" @bind="_lineas[indice].Cantidad" /></td>
-                <td><button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => QuitarLinea(indice)">×</button></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<MudText Typo="Typo.h6" Class="mb-2">Productos</MudText>
+<MudPaper Elevation="1" Class="mb-3">
+    <MudTable T="LineaVenta" Items="_lineas" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Producto</MudTh>
+            <MudTh Style="text-align: right;">Precio</MudTh>
+            <MudTh Style="text-align: right;">Stock</MudTh>
+            <MudTh>Cantidad</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Producto">
+                <MudSelect T="int" @bind-Value="context.ArticuloId" Variant="Variant.Outlined"
+                           Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem T="int" Value="0">Seleccione...</MudSelectItem>
+                    @foreach (var opcion in _productos)
+                    {
+                        <MudSelectItem T="int" Value="@opcion.ArticuloId">
+                            @opcion.Codigo — @opcion.Nombre (@opcion.Sku)
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="Precio" Style="text-align: right;">@Precio(context.ArticuloId)</MudTd>
+            <MudTd DataLabel="Stock" Style="text-align: right;">@Stock(context.ArticuloId)</MudTd>
+            <MudTd DataLabel="Cantidad">
+                <MudNumericField T="decimal" @bind-Value="context.Cantidad" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Quitar línea" OnClick="() => QuitarLinea(context)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
 
-<button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarLinea">Agregar línea</button>
-
-<div>
-    <button class="btn btn-primary" disabled="@(_usuarioActual is null)" @onclick="GuardarAsync">Registrar venta</button>
-</div>
+<MudStack Row="true" Spacing="2">
+    <MudButton OnClick="AgregarLinea" Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">Agregar línea</MudButton>
+    <MudButton OnClick="GuardarAsync" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Save" Disabled="@(_usuarioActual is null)">
+        Registrar venta
+    </MudButton>
+</MudStack>
 
 @code {
     private sealed class LineaVenta
@@ -141,11 +156,17 @@ else
 
     private void AgregarLinea() => _lineas.Add(new LineaVenta());
 
-    private void QuitarLinea(int indice)
+    private void QuitarLinea(LineaVenta linea)
     {
-        _lineas.RemoveAt(indice);
+        _lineas.Remove(linea);
         if (_lineas.Count == 0) _lineas.Add(new LineaVenta());
     }
+
+    private string Precio(int articuloId) =>
+        _productos.FirstOrDefault(p => p.ArticuloId == articuloId)?.PrecioVenta.ToString("C") ?? "—";
+
+    private string Stock(int articuloId) =>
+        _productos.FirstOrDefault(p => p.ArticuloId == articuloId)?.Stock.ToString("0.###") ?? "—";
 
     private async Task CargarProductosAsync()
     {
@@ -154,18 +175,15 @@ else
             .OrderBy(a => a.Nombre)
             .ToListAsync();
         var ids = articulos.Select(a => a.Id).ToList();
-        var productos = await Db.Productos.Where(p => ids.Contains(p.ArticuloId)).ToDictionaryAsync(p => p.ArticuloId);
+        var productos = await Db.Productos.Where(p => ids.Contains(p.ArticuloId))
+            .ToDictionaryAsync(p => p.ArticuloId);
         var saldos = await SaldosInventario.ObtenerSaldosAsync(Db, ids);
 
         _productos = articulos
             .Where(a => productos.ContainsKey(a.Id))
             .Select(a => new ProductoOpcion(
-                a.Id,
-                a.Codigo,
-                a.Nombre,
-                productos[a.Id].Sku,
-                productos[a.Id].PrecioVenta,
-                saldos.GetValueOrDefault(a.Id)))
+                a.Id, a.Codigo, a.Nombre, productos[a.Id].Sku,
+                productos[a.Id].PrecioVenta, saldos.GetValueOrDefault(a.Id)))
             .ToList();
     }
 
@@ -182,12 +200,7 @@ else
 
         var resultado = await RegistrarVentaHandler.HandleAsync(
             new RegistrarVentaProductos.Command(
-                _usuarioActual.Id,
-                _clienteId,
-                _esCredito,
-                _referencia,
-                null,
-                lineas));
+                _usuarioActual.Id, _clienteId, _esCredito, _referencia, null, lineas));
 
         _errores = resultado.Errores;
         if (!resultado.Exitoso) return;

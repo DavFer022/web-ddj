@@ -8,13 +8,14 @@ descripcion: Memoria a corto plazo del estado actual del proyecto, Maximo ~50 li
 ## Estado actual
 
 - Rama `feature/inventario`: HU-04 a HU-10 completadas. Inventario tiene catálogo, proveedores con teléfonos, dashboard de stock, compras, ventas, consumo de insumos y ajustes/mermas.
-- Pruebas: 48 pasan con PostgreSQL aislado (`web_ddj_tests`); las migraciones nuevas también están aplicadas en `web_ddj`.
-- UI: `/inventario` (dashboard + catálogo), `/inventario/proveedores`, `/inventario/compras`, `/inventario/ventas`, `/inventario/consumos` y `/inventario/ajustes`.
+- Pruebas: 54 pasan con PostgreSQL aislado (`web_ddj_tests`); las migraciones nuevas también están aplicadas en `web_ddj`.
+- UI migrada a **MudBlazor 9.12.0** con layout, tema propio y tarjetas/tablas/formularios. Rutas: `/inventario` (dashboard + catálogo), `/inventario/proveedores`, `/inventario/compras`, `/inventario/ventas`, `/inventario/consumos` y `/inventario/ajustes`.
 - Pendiente: preparar el PR/cierre de las dos épicas de Inventario. Los demás módulos siguen con páginas placeholder y sin lógica de negocio.
 
 ## Decisiones y por que
 
 - Monolito modular con VSA: cada módulo es dueño de su esquema y `DbContext`; las FK cruzadas viven en `IntegracionDbContext`.
+- MudBlazor se registra con `AddMudServices()`; el tema y los providers viven en el layout, y el CSS/JS se cargan desde `_content/MudBlazor`.
 - La colaboración entre módulos usa `PublicApi` (`IAccesoPublicApi`, `IClientesPublicApi`, `IPersonalizacionPublicApi`); nunca se inyecta otro `DbContext`.
 - El usuario actual es temporal: devuelve el primer usuario activo hasta que HU-01 implemente autenticación.
 - Stock calculado desde `detalle_movimiento_inventario`: entradas suman, salidas restan; `stock_minimo` en `articulo` define bajo stock y 0 es agotado.

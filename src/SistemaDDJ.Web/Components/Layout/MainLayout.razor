@@ -1,23 +1,59 @@
 ﻿@inherits LayoutComponentBase
+@using SistemaDDJ.Web.Components.Theme
 
-<div class="page">
-    <div class="sidebar">
+<MudThemeProvider Theme="DdjTheme.Value" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Color="Color.Primary" Dense="false">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       aria-label="Abrir menú"
+                       OnClick="AlternarMenu" />
+        <MudText Typo="Typo.h6" Class="ml-2 font-weight-bold">Sistema DD&amp;J</MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.body2" Class="d-none d-md-block mr-4">
+            Gestión de tienda y personalización
+        </MudText>
+        <MudIconButton Icon="@Icons.Material.Outlined.Notifications"
+                       Color="Color.Inherit"
+                       aria-label="Notificaciones" />
+        <MudAvatar Color="Color.Secondary" Size="Size.Small" Class="ml-2">DJ</MudAvatar>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_menuAbierto"
+               Elevation="3"
+               ClipMode="DrawerClipMode.Always"
+               Variant="DrawerVariant.Responsive"
+               Breakpoint="Breakpoint.Md">
+        <MudDrawerHeader Class="px-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium">DD</MudAvatar>
+                <div>
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-bold">DD&amp;J</MudText>
+                    <MudText Typo="Typo.caption">Taller y tienda</MudText>
+                </div>
+            </MudStack>
+        </MudDrawerHeader>
         <NavMenu />
-    </div>
+    </MudDrawer>
 
-    <main>
-        <div class="top-row px-4 justify-content-end">
-            Sistema de gestión de tienda
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    <MudMainContent Class="pt-16 px-4 pb-6">
+        @Body
+    </MudMainContent>
+</MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    Ocurrió un error inesperado.
+    <a href="." class="reload">Recargar</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool _menuAbierto = true;
+
+    private void AlternarMenu() => _menuAbierto = !_menuAbierto;
+}

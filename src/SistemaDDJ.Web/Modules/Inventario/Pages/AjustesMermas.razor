@@ -13,112 +13,129 @@
 
 <PageTitle>Ajustes y mermas | Sistema DD&amp;J</PageTitle>
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Ajustes y mermas</li>
-    </ol>
-</nav>
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
 
-<h1>Ajustes y mermas</h1>
+<MudText Typo="Typo.h3" Class="font-weight-bold">Ajustes y mermas</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Cuadra el stock físico y deja constancia de las mermas del taller con notas obligatorias.
+</MudText>
 
 @if (_usuarioActual is null)
 {
-    <div class="alert alert-warning">No hay un usuario activo para registrar el movimiento.</div>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        No hay un usuario activo para registrar el movimiento.
+    </MudAlert>
 }
 else
 {
-    <p class="text-muted">Registrado por: <strong>@_usuarioActual.NombreVisible</strong></p>
+    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Class="mb-3"
+             Icon="@Icons.Material.Filled.Person">
+        Registrado por: @_usuarioActual.NombreVisible
+    </MudChip>
 }
-
-<ul class="text-danger">
-    @foreach (var error in _errores)
-    {
-        <li>@error</li>
-    }
-</ul>
 
 @if (!string.IsNullOrWhiteSpace(_mensaje))
 {
-    <div class="alert alert-success">@_mensaje</div>
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+@if (_errores.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        @foreach (var error in _errores)
+        {
+            <div>@error</div>
+        }
+    </MudAlert>
 }
 
-<div class="row g-2 mb-3">
-    <div class="col-md-2">
-        <label class="form-label">Tipo</label>
-        <select class="form-select" @bind="_tipoMovimiento">
-            <option value="@TipoMovimientoInventario.ENTRADA">Entrada</option>
-            <option value="@TipoMovimientoInventario.SALIDA">Salida</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <label class="form-label">Motivo</label>
-        <select class="form-select" @bind="_motivo" @bind:after="CambiarMotivoAsync">
-            <option value="@MotivoMovimientoInventario.AJUSTE">Ajuste</option>
-            <option value="@MotivoMovimientoInventario.MERMA">Merma</option>
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Notas (obligatorias)</label>
-        <textarea class="form-control" rows="2" @bind="_notas" placeholder="Explique la causa del ajuste o de la merma"></textarea>
-    </div>
-    <div class="col-md-2">
-        <label class="form-label">Referencia</label>
-        <input class="form-control" @bind="_referencia" />
-    </div>
-    @if (_motivo == MotivoMovimientoInventario.MERMA)
-    {
-        <div class="col-md-2">
-            <label class="form-label">Orden (opcional)</label>
-            <select class="form-select" @bind="_ordenServicioId">
-                <option value="">Sin orden</option>
-                @foreach (var orden in _ordenes)
-                {
-                    <option value="@orden.Id">@orden.NumeroOrden</option>
-                }
-            </select>
-        </div>
-    }
-</div>
-
-<h2 class="h4">Artículos</h2>
-<table class="table table-sm align-middle">
-    <thead>
-        <tr>
-            <th>Artículo</th>
-            <th class="text-end">Stock</th>
-            <th style="width: 9rem;">Cantidad</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (var i = 0; i < _lineas.Count; i++)
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" md="2">
+            <MudSelect T="TipoMovimientoInventario" @bind-Value="_tipoMovimiento" Label="Tipo"
+                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem T="TipoMovimientoInventario" Value="TipoMovimientoInventario.ENTRADA">Entrada</MudSelectItem>
+                <MudSelectItem T="TipoMovimientoInventario" Value="TipoMovimientoInventario.SALIDA">Salida</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="2">
+            <MudSelect T="MotivoMovimientoInventario" @bind-Value="_motivo"
+                       @bind-Value:after="CambiarMotivoAsync" Label="Motivo"
+                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                <MudSelectItem T="MotivoMovimientoInventario" Value="MotivoMovimientoInventario.AJUSTE">Ajuste</MudSelectItem>
+                <MudSelectItem T="MotivoMovimientoInventario" Value="MotivoMovimientoInventario.MERMA">Merma</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField T="string" @bind-Value="_notas" Label="Notas (obligatorias)"
+                          Placeholder="Explique la causa del ajuste o de la merma"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" md="2">
+            <MudTextField T="string" @bind-Value="_referencia" Label="Referencia"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        @if (_motivo == MotivoMovimientoInventario.MERMA)
         {
-            var indice = i;
-            var articulo = _articulos.FirstOrDefault(x => x.ArticuloId == _lineas[indice].ArticuloId);
-            <tr>
-                <td>
-                    <select class="form-select" @bind="_lineas[indice].ArticuloId">
-                        <option value="0">Seleccione...</option>
-                        @foreach (var opcion in ArticulosDisponibles)
-                        {
-                            <option value="@opcion.ArticuloId">@opcion.Codigo — @opcion.Nombre (@opcion.Tipo)</option>
-                        }
-                    </select>
-                </td>
-                <td class="text-end">@(articulo?.Stock.ToString("0.###") ?? "—")</td>
-                <td><input type="number" step="0.001" class="form-control" @bind="_lineas[indice].Cantidad" /></td>
-                <td><button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => QuitarLinea(indice)">×</button></td>
-            </tr>
+            <MudItem xs="12" md="2">
+                <MudSelect T="Guid?" @bind-Value="_ordenServicioId" Label="Orden (opcional)"
+                           Variant="Variant.Outlined" Margin="Margin.Dense">
+                    <MudSelectItem T="Guid?" Value="@((Guid?)null)">Sin orden</MudSelectItem>
+                    @foreach (var orden in _ordenes)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)orden.Id)">@orden.NumeroOrden</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
         }
-    </tbody>
-</table>
+    </MudGrid>
+</MudPaper>
 
-<button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarLinea">Agregar línea</button>
+<MudText Typo="Typo.h6" Class="mb-2">Artículos</MudText>
+<MudPaper Elevation="1" Class="mb-3">
+    <MudTable T="LineaMovimiento" Items="_lineas" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Artículo</MudTh>
+            <MudTh Style="text-align: right;">Stock</MudTh>
+            <MudTh>Cantidad</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Artículo">
+                <MudSelect T="int" @bind-Value="context.ArticuloId" Variant="Variant.Outlined"
+                           Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem T="int" Value="0">Seleccione...</MudSelectItem>
+                    @foreach (var opcion in ArticulosDisponibles)
+                    {
+                        <MudSelectItem T="int" Value="@opcion.ArticuloId">
+                            @opcion.Codigo — @opcion.Nombre (@opcion.Tipo)
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="Stock" Style="text-align: right;">@Stock(context.ArticuloId)</MudTd>
+            <MudTd DataLabel="Cantidad">
+                <MudNumericField T="decimal" @bind-Value="context.Cantidad" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Quitar línea" OnClick="() => QuitarLinea(context)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
 
-<div>
-    <button class="btn btn-primary" disabled="@(_usuarioActual is null)" @onclick="GuardarAsync">Registrar movimiento</button>
-</div>
+<MudStack Row="true" Spacing="2">
+    <MudButton OnClick="AgregarLinea" Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">Agregar línea</MudButton>
+    <MudButton OnClick="GuardarAsync" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Save" Disabled="@(_usuarioActual is null)">
+        Registrar movimiento
+    </MudButton>
+</MudStack>
 
 @code {
     private sealed class LineaMovimiento
@@ -172,15 +189,20 @@ else
         {
             linea.ArticuloId = 0;
         }
+
+        await Task.CompletedTask;
     }
 
     private void AgregarLinea() => _lineas.Add(new LineaMovimiento());
 
-    private void QuitarLinea(int indice)
+    private void QuitarLinea(LineaMovimiento linea)
     {
-        _lineas.RemoveAt(indice);
+        _lineas.Remove(linea);
         if (_lineas.Count == 0) _lineas.Add(new LineaMovimiento());
     }
+
+    private string Stock(int articuloId) =>
+        _articulos.FirstOrDefault(a => a.ArticuloId == articuloId)?.Stock.ToString("0.###") ?? "—";
 
     private async Task CargarArticulosAsync()
     {
@@ -208,13 +230,8 @@ else
 
         var resultado = await RegistrarAjusteHandler.HandleAsync(
             new RegistrarAjusteOMerma.Command(
-                _tipoMovimiento,
-                _motivo,
-                _notas,
-                _usuarioActual.Id,
-                _ordenServicioId,
-                _referencia,
-                lineas));
+                _tipoMovimiento, _motivo, _notas, _usuarioActual.Id,
+                _ordenServicioId, _referencia, lineas));
 
         _errores = resultado.Errores;
         if (!resultado.Exitoso) return;

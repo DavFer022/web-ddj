@@ -13,101 +13,119 @@
 
 <PageTitle>Compra a proveedor | Sistema DD&amp;J</PageTitle>
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Compra a proveedor</li>
-    </ol>
-</nav>
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
 
-<h1>Compra a proveedor</h1>
+<MudText Typo="Typo.h3" Class="font-weight-bold">Compra a proveedor</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Registra la entrada de productos e insumos desde una misma factura.
+</MudText>
 
 @if (_usuarioActual is null)
 {
-    <div class="alert alert-warning">No hay un usuario activo para registrar la compra.</div>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        No hay un usuario activo para registrar la compra.
+    </MudAlert>
 }
 else
 {
-    <p class="text-muted">Registrada por: <strong>@_usuarioActual.NombreVisible</strong></p>
+    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Class="mb-3"
+             Icon="@Icons.Material.Filled.Person">
+        Registrada por: @_usuarioActual.NombreVisible
+    </MudChip>
 }
-
-<ul class="text-danger">
-    @foreach (var error in _errores)
-    {
-        <li>@error</li>
-    }
-</ul>
 
 @if (!string.IsNullOrWhiteSpace(_mensaje))
 {
-    <div class="alert alert-success">@_mensaje</div>
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+@if (_errores.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        @foreach (var error in _errores)
+        {
+            <div>@error</div>
+        }
+    </MudAlert>
 }
 
-<div class="row g-2 mb-3">
-    <div class="col-md-5">
-        <label class="form-label">Proveedor</label>
-        <select class="form-select" @bind="_proveedorId">
-            <option value="0">Seleccione un proveedor activo...</option>
-            @foreach (var proveedor in _proveedores)
-            {
-                <option value="@proveedor.Id">@proveedor.RazonSocial</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Referencia (factura)</label>
-        <input class="form-control" @bind="_referencia" />
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Notas</label>
-        <input class="form-control" @bind="_notas" />
-    </div>
-</div>
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudSelect T="int" @bind-Value="_proveedorId" Label="Proveedor" Variant="Variant.Outlined"
+                       Margin="Margin.Dense">
+                <MudSelectItem T="int" Value="0">Seleccione un proveedor activo...</MudSelectItem>
+                @foreach (var proveedor in _proveedores)
+                {
+                    <MudSelectItem T="int" Value="@proveedor.Id">@proveedor.RazonSocial</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField T="string" @bind-Value="_referencia" Label="Referencia (factura)"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudTextField T="string" @bind-Value="_notas" Label="Notas"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-<h2 class="h4">Líneas de compra</h2>
-<table class="table table-sm align-middle">
-    <thead>
-        <tr>
-            <th>Artículo</th>
-            <th style="width: 9rem;">Cantidad</th>
-            <th style="width: 9rem;">Costo unitario</th>
-            <th style="width: 10rem;">Actualizar costo</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (var i = 0; i < _lineas.Count; i++)
-        {
-            var indice = i;
-            <tr>
-                <td>
-                    <select class="form-select" @bind="_lineas[indice].ArticuloId" @bind:after="() => ActualizarCosto(indice)">
-                        <option value="0">Seleccione...</option>
-                        @foreach (var articulo in _articulos)
-                        {
-                            <option value="@articulo.Id">@articulo.Codigo — @articulo.Nombre (@articulo.Tipo)</option>
-                        }
-                    </select>
-                </td>
-                <td><input type="number" step="0.001" class="form-control" @bind="_lineas[indice].Cantidad" /></td>
-                <td><input type="number" step="0.01" class="form-control" @bind="_lineas[indice].CostoUnitario" /></td>
-                <td>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" @bind="_lineas[indice].ActualizarCostoReferencia" />
-                        <label class="form-check-label">Último costo</label>
-                    </div>
-                </td>
-                <td><button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => QuitarLinea(indice)">×</button></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<MudText Typo="Typo.h6" Class="mb-2">Líneas de compra</MudText>
+<MudPaper Elevation="1" Class="mb-3">
+    <MudTable T="LineaCompra" Items="_lineas" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Artículo</MudTh>
+            <MudTh>Cantidad</MudTh>
+            <MudTh>Costo unitario</MudTh>
+            <MudTh>Actualizar costo</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Artículo">
+                <MudSelect T="int" @bind-Value="context.ArticuloId"
+                           @bind-Value:after="() => ActualizarCosto(context)"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                    <MudSelectItem T="int" Value="0">Seleccione...</MudSelectItem>
+                    @foreach (var articulo in _articulos)
+                    {
+                        <MudSelectItem T="int" Value="@articulo.Id">
+                            @articulo.Codigo — @articulo.Nombre (@articulo.Tipo)
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudTd>
+            <MudTd DataLabel="Cantidad">
+                <MudNumericField T="decimal" @bind-Value="context.Cantidad" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd DataLabel="Costo unitario">
+                <MudNumericField T="decimal" @bind-Value="context.CostoUnitario" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd DataLabel="Actualizar costo">
+                <MudCheckBox T="bool" @bind-Value="context.ActualizarCostoReferencia" Label="Último costo"
+                             Dense="true" Color="Color.Primary" />
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Quitar línea" OnClick="() => QuitarLinea(context)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
 
-<button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarLinea">Agregar línea</button>
-
-<div>
-    <button class="btn btn-primary" disabled="@(_usuarioActual is null)" @onclick="GuardarAsync">Registrar compra</button>
-</div>
+<MudStack Row="true" Spacing="2">
+    <MudButton OnClick="AgregarLinea" Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">Agregar línea</MudButton>
+    <MudButton OnClick="GuardarAsync" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Save" Disabled="@(_usuarioActual is null)">
+        Registrar compra
+    </MudButton>
+</MudStack>
 
 @code {
     private sealed class LineaCompra
@@ -137,16 +155,16 @@ else
 
     private void AgregarLinea() => _lineas.Add(new LineaCompra());
 
-    private void QuitarLinea(int indice)
+    private void QuitarLinea(LineaCompra linea)
     {
-        _lineas.RemoveAt(indice);
+        _lineas.Remove(linea);
         if (_lineas.Count == 0) _lineas.Add(new LineaCompra());
     }
 
-    private void ActualizarCosto(int indice)
+    private void ActualizarCosto(LineaCompra linea)
     {
-        var articulo = _articulos.FirstOrDefault(a => a.Id == _lineas[indice].ArticuloId);
-        if (articulo is not null) _lineas[indice].CostoUnitario = articulo.CostoUnitario;
+        var articulo = _articulos.FirstOrDefault(a => a.Id == linea.ArticuloId);
+        if (articulo is not null) linea.CostoUnitario = articulo.CostoUnitario;
     }
 
     private async Task GuardarAsync()
