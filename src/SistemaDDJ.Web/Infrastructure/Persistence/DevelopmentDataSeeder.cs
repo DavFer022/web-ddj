@@ -91,8 +91,22 @@ public static class DevelopmentDataSeeder
             new Insumo { ArticuloId = vinilNegro.Id, Descripcion = "Vinil textil para corte y prensado" },
             new Insumo { ArticuloId = peliculaDtf.Id, Descripcion = "Película para transferencia DTF" });
 
-        var textiles = new Proveedor { RazonSocial = "Textiles del Centro C.A.", IdentificacionFiscal = "J-30111222-1", Correo = "ventas@textilescentro.example", Telefono = "0412-5550101" };
-        var sublimacionExpress = new Proveedor { RazonSocial = "Sublimación Express", Telefono = "0414-5550202" };
+        var textiles = new Proveedor
+        {
+            RazonSocial = "Textiles del Centro C.A.",
+            IdentificacionFiscal = "J-30111222-1",
+            Correo = "ventas@textilescentro.example",
+            Telefonos =
+            [
+                new TelefonoProveedor { Numero = "0412-5550101", Etiqueta = "Ventas", EsPrincipal = true },
+                new TelefonoProveedor { Numero = "0414-5550102", Etiqueta = "Administración" }
+            ]
+        };
+        var sublimacionExpress = new Proveedor
+        {
+            RazonSocial = "Sublimación Express",
+            Telefonos = [new TelefonoProveedor { Numero = "0414-5550202", Etiqueta = "Pedidos", EsPrincipal = true }]
+        };
         var proveedorInactivo = new Proveedor { RazonSocial = "Proveedor descontinuado", IdentificacionFiscal = "J-40000000-0", Activo = false };
         inventario.Proveedores.AddRange(textiles, sublimacionExpress, proveedorInactivo);
         await inventario.SaveChangesAsync(cancellationToken);

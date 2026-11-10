@@ -60,9 +60,9 @@ Permitir a un trabajador registrar, actualizar y desactivar proveedores con uno 
 ## 6. Tasks
 
 - [x] Confirmar las dudas de la sección 4 con el usuario.
-- [ ] **Red:** escribir `ProveedoresTests.cs` y verificar que falla.
-- [ ] Agregar entidad `TelefonoProveedor`, configuración EF y migración en `InventarioDbContext` (actualizando el seeder, MER y `ARCHITECTURE.md`).
-- [ ] **Green:** implementar `RegistrarProveedor`, `ActualizarProveedor` y `CambiarEstadoProveedor`, y registrarlos en `InventarioModule`.
-- [ ] Ejecutar `dotnet test` sobre `web_ddj_tests` y aplicar la migración en `web_ddj`.
-- [ ] Agregar la interfaz de proveedores en `Modules/Inventario/Pages` y su prueba de humo si aplica.
-- [ ] **Refactor**, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-05 ...`) en `feature/inventario`.
+- [x] **Red:** escribir `ProveedoresTests.cs` y verificar que falla.
+- [x] Agregar entidad `TelefonoProveedor`, configuración EF y migración en `InventarioDbContext` (actualizando el seeder, MER y `ARCHITECTURE.md`).
+- [x] **Green:** implementar `RegistrarProveedor`, `ActualizarProveedor` y `CambiarEstadoProveedor`, y registrarlos en `InventarioModule`.
+- [x] Ejecutar `dotnet test` sobre `web_ddj_tests` y aplicar la migración en `web_ddj`.
+- [x] Agregar la interfaz de proveedores en `Modules/Inventario/Pages` y su prueba de humo si aplica.
+- [x] **Refactor**, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, y hacer commit (`feat(inventario): HU-05 ...`) en `feature/inventario`.

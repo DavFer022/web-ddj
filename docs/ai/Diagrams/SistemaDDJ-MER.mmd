@@ -96,8 +96,15 @@ erDiagram
         varchar razon_social
         varchar identificacion_fiscal
         varchar correo
-        varchar telefono
         boolean activo
+    }
+
+    TELEFONO_PROVEEDOR {
+        int id PK
+        int proveedor_id FK
+        varchar numero
+        varchar etiqueta
+        boolean es_principal
     }
 
     MOVIMIENTO_INVENTARIO {
@@ -180,6 +187,7 @@ erDiagram
     ARTICULO ||--o| PRODUCTO : especializa_en
     ARTICULO ||--o| INSUMO : especializa_en
 
+    PROVEEDOR ||--o{ TELEFONO_PROVEEDOR : tiene_contactos
     PROVEEDOR o|--o{ MOVIMIENTO_INVENTARIO : proveedor_en_compra
     USUARIO ||--o{ MOVIMIENTO_INVENTARIO : registra
     CLIENTE o|--o{ MOVIMIENTO_INVENTARIO : cliente_en_venta

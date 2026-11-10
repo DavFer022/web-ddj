@@ -14,6 +14,7 @@ public sealed class InventarioDbContext(DbContextOptions<InventarioDbContext> op
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<Insumo> Insumos => Set<Insumo>();
     public DbSet<Proveedor> Proveedores => Set<Proveedor>();
+    public DbSet<TelefonoProveedor> TelefonosProveedor => Set<TelefonoProveedor>();
     public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
     public DbSet<DetalleMovimientoInventario> DetallesMovimientoInventario => Set<DetalleMovimientoInventario>();
 
@@ -24,6 +25,7 @@ public sealed class InventarioDbContext(DbContextOptions<InventarioDbContext> op
         modelBuilder.ApplyConfiguration(new ProductoConfiguration());
         modelBuilder.ApplyConfiguration(new InsumoConfiguration());
         modelBuilder.ApplyConfiguration(new ProveedorConfiguration());
+        modelBuilder.ApplyConfiguration(new TelefonoProveedorConfiguration());
         modelBuilder.ApplyConfiguration(new MovimientoInventarioConfiguration());
         modelBuilder.ApplyConfiguration(new DetalleMovimientoInventarioConfiguration());
         modelBuilder.ApplyModuleConventions(Schema);

@@ -320,17 +320,51 @@ namespace SistemaDDJ.Web.Modules.Inventario.Data.Migrations
                         .HasColumnType("character varying(150)")
                         .HasColumnName("razon_social");
 
-                    b.Property<string>("Telefono")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("telefono");
-
                     b.HasKey("Id");
 
                     b.HasIndex("IdentificacionFiscal")
                         .IsUnique();
 
                     b.ToTable("proveedor", "inventario");
+                });
+
+            modelBuilder.Entity("SistemaDDJ.Web.Modules.Inventario.Entities.TelefonoProveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("EsPrincipal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("es_principal");
+
+                    b.Property<string>("Etiqueta")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("etiqueta");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("numero");
+
+                    b.Property<int>("ProveedorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("proveedor_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProveedorId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("telefono_proveedor", "inventario", t =>
+                        {
+                            t.HasCheckConstraint("ck_telefono_proveedor_numero", "btrim(numero) <> ''");
+                        });
                 });
 
             modelBuilder.Entity("SistemaDDJ.Web.Modules.Inventario.Entities.Articulo", b =>
@@ -381,6 +415,20 @@ namespace SistemaDDJ.Web.Modules.Inventario.Data.Migrations
                         .HasForeignKey("SistemaDDJ.Web.Modules.Inventario.Entities.Producto", "ArticuloId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SistemaDDJ.Web.Modules.Inventario.Entities.TelefonoProveedor", b =>
+                {
+                    b.HasOne("SistemaDDJ.Web.Modules.Inventario.Entities.Proveedor", null)
+                        .WithMany("Telefonos")
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistemaDDJ.Web.Modules.Inventario.Entities.Proveedor", b =>
+                {
+                    b.Navigation("Telefonos");
                 });
 #pragma warning restore 612, 618
         }

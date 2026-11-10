@@ -74,8 +74,22 @@ public sealed class ProveedorConfiguration : IEntityTypeConfiguration<Proveedor>
         builder.Property(x => x.IdentificacionFiscal).HasMaxLength(30);
         builder.HasIndex(x => x.IdentificacionFiscal).IsUnique();
         builder.Property(x => x.Correo).HasMaxLength(255);
-        builder.Property(x => x.Telefono).HasMaxLength(30);
         builder.Property(x => x.Activo).HasDefaultValue(true);
+    }
+}
+
+public sealed class TelefonoProveedorConfiguration : IEntityTypeConfiguration<TelefonoProveedor>
+{
+    public void Configure(EntityTypeBuilder<TelefonoProveedor> builder)
+    {
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Numero).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Etiqueta).HasMaxLength(50);
+        builder.HasIndex(x => new { x.ProveedorId, x.Numero }).IsUnique();
+        builder.HasOne<Proveedor>().WithMany(x => x.Telefonos).HasForeignKey(x => x.ProveedorId);
+
+        builder.ToTable(t =>
+            t.HasCheckConstraint("ck_telefono_proveedor_numero", "btrim(numero) <> ''"));
     }
 }
 

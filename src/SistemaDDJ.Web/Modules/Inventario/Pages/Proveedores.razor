@@ -1,0 +1,223 @@
+@page "/inventario/proveedores"
+@using SistemaDDJ.Web.Modules.Inventario.Features.ActualizarProveedor
+@using SistemaDDJ.Web.Modules.Inventario.Features.CambiarEstadoProveedor
+@using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores
+@using SistemaDDJ.Web.Modules.Inventario.Features.Proveedores
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarProveedor
+@inject ListarProveedores.Handler ListarHandler
+@inject RegistrarProveedor.Handler RegistrarHandler
+@inject ActualizarProveedor.Handler ActualizarHandler
+@inject CambiarEstadoProveedor.Handler CambiarEstadoHandler
+
+<PageTitle>Proveedores | Sistema DD&amp;J</PageTitle>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/inventario">Inventario</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Proveedores</li>
+    </ol>
+</nav>
+
+<h1>Proveedores</h1>
+
+<ul class="text-danger">
+    @foreach (var error in _errores)
+    {
+        <li>@error</li>
+    }
+</ul>
+
+@if (!string.IsNullOrWhiteSpace(_mensaje))
+{
+    <div class="alert alert-success">@_mensaje</div>
+}
+
+<div class="row">
+    <div class="col-lg-5">
+        <h2>@(_form.ProveedorId is null ? "Nuevo proveedor" : "Editar proveedor")</h2>
+        <EditForm Model="_form" OnValidSubmit="GuardarAsync" FormName="proveedor">
+            <div class="mb-2">
+                <label class="form-label">Razón social</label>
+                <InputText class="form-control" @bind-Value="_form.RazonSocial" />
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Identificación fiscal</label>
+                <InputText class="form-control" @bind-Value="_form.IdentificacionFiscal" />
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Correo</label>
+                <InputText class="form-control" @bind-Value="_form.Correo" />
+            </div>
+
+            <h3 class="h5 mt-3">Teléfonos</h3>
+            @for (var i = 0; i < _form.Telefonos.Count; i++)
+            {
+                var indice = i;
+                <div class="row g-2 mb-2 align-items-end">
+                    <div class="col-5">
+                        <label class="form-label">Número</label>
+                        <InputText class="form-control" @bind-Value="_form.Telefonos[indice].Numero" />
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Etiqueta</label>
+                        <InputText class="form-control" @bind-Value="_form.Telefonos[indice].Etiqueta" />
+                    </div>
+                    <div class="col-2">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="_form.Telefonos[indice].EsPrincipal" />
+                            <label class="form-check-label">Principal</label>
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => QuitarTelefono(indice)">×</button>
+                    </div>
+                </div>
+            }
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" @onclick="AgregarTelefono">Agregar teléfono</button>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Guardar</button>
+                @if (_form.ProveedorId is not null)
+                {
+                    <button type="button" class="btn btn-outline-secondary" @onclick="LimpiarFormulario">Cancelar edición</button>
+                }
+            </div>
+        </EditForm>
+    </div>
+
+    <div class="col-lg-7">
+        <h2>Proveedores registrados</h2>
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Razón social</th>
+                    <th>Identificación fiscal</th>
+                    <th>Teléfonos</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var proveedor in _proveedores)
+                {
+                    <tr class="@(proveedor.Activo ? null : "table-secondary")">
+                        <td>
+                            <strong>@proveedor.RazonSocial</strong>
+                            @if (!string.IsNullOrWhiteSpace(proveedor.Correo))
+                            {
+                                <div class="small text-muted">@proveedor.Correo</div>
+                            }
+                        </td>
+                        <td>@(proveedor.IdentificacionFiscal ?? "—")</td>
+                        <td>@(proveedor.Telefonos.Count == 0 ? "—" : string.Join(", ", proveedor.Telefonos.Select(t => t.Numero)))</td>
+                        <td>@(proveedor.Activo ? "Activo" : "Inactivo")</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => Editar(proveedor)">Editar</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstadoAsync(proveedor)">
+                                @(proveedor.Activo ? "Desactivar" : "Activar")
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private sealed class FormularioProveedor
+    {
+        public int? ProveedorId { get; set; }
+        public string RazonSocial { get; set; } = string.Empty;
+        public string? IdentificacionFiscal { get; set; }
+        public string? Correo { get; set; }
+        public List<FormularioTelefono> Telefonos { get; set; } = [new()];
+    }
+
+    private sealed class FormularioTelefono
+    {
+        public string Numero { get; set; } = string.Empty;
+        public string? Etiqueta { get; set; }
+        public bool EsPrincipal { get; set; }
+    }
+
+    private FormularioProveedor _form = new();
+    private IReadOnlyList<ProveedorDto> _proveedores = [];
+    private IReadOnlyList<string> _errores = [];
+    private string? _mensaje;
+
+    protected override async Task OnInitializedAsync() => await CargarAsync();
+
+    private async Task CargarAsync() =>
+        _proveedores = await ListarHandler.HandleAsync(new ListarProveedores.Consulta(SoloActivos: false));
+
+    private void AgregarTelefono() => _form.Telefonos.Add(new FormularioTelefono());
+
+    private void QuitarTelefono(int indice) => _form.Telefonos.RemoveAt(indice);
+
+    private void Editar(ProveedorDto proveedor)
+    {
+        _form = new FormularioProveedor
+        {
+            ProveedorId = proveedor.Id,
+            RazonSocial = proveedor.RazonSocial,
+            IdentificacionFiscal = proveedor.IdentificacionFiscal,
+            Correo = proveedor.Correo,
+            Telefonos = proveedor.Telefonos
+                .Select(t => new FormularioTelefono { Numero = t.Numero, Etiqueta = t.Etiqueta, EsPrincipal = t.EsPrincipal })
+                .ToList()
+        };
+        if (_form.Telefonos.Count == 0) _form.Telefonos.Add(new FormularioTelefono());
+        _errores = [];
+        _mensaje = null;
+    }
+
+    private async Task GuardarAsync()
+    {
+        _errores = [];
+        _mensaje = null;
+
+        var telefonos = _form.Telefonos
+            .Where(t => !string.IsNullOrWhiteSpace(t.Numero))
+            .Select(t => new TelefonoProveedorDto(t.Numero, t.Etiqueta, t.EsPrincipal))
+            .ToList();
+
+        if (_form.ProveedorId is null)
+        {
+            var resultado = await RegistrarHandler.HandleAsync(
+                new RegistrarProveedor.Command(_form.RazonSocial, _form.IdentificacionFiscal, _form.Correo, telefonos));
+            _errores = resultado.Errores;
+            if (!resultado.Exitoso) return;
+            _mensaje = "Proveedor registrado.";
+        }
+        else
+        {
+            var resultado = await ActualizarHandler.HandleAsync(
+                new ActualizarProveedor.Command(_form.ProveedorId.Value, _form.RazonSocial, _form.IdentificacionFiscal, _form.Correo, telefonos));
+            _errores = resultado.Errores;
+            if (!resultado.Exitoso) return;
+            _mensaje = "Proveedor actualizado.";
+        }
+
+        LimpiarFormulario();
+        await CargarAsync();
+    }
+
+    private async Task CambiarEstadoAsync(ProveedorDto proveedor)
+    {
+        _errores = [];
+        _mensaje = null;
+        var resultado = await CambiarEstadoHandler.HandleAsync(
+            new CambiarEstadoProveedor.Command(proveedor.Id, !proveedor.Activo));
+        _errores = resultado.Errores;
+        if (!resultado.Exitoso) return;
+        _mensaje = proveedor.Activo ? "Proveedor desactivado." : "Proveedor activado.";
+        await CargarAsync();
+    }
+
+    private void LimpiarFormulario()
+    {
+        _form = new FormularioProveedor();
+        _errores = [];
+    }
+}

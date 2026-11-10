@@ -15,16 +15,6 @@ public enum MotivoMovimientoInventario
     AJUSTE
 }
 
-public sealed class Proveedor
-{
-    public int Id { get; set; }
-    public string RazonSocial { get; set; } = string.Empty;
-    public string? IdentificacionFiscal { get; set; }
-    public string? Correo { get; set; }
-    public string? Telefono { get; set; }
-    public bool Activo { get; set; } = true;
-}
-
 public sealed class MovimientoInventario
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();

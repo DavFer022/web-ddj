@@ -1,7 +1,11 @@
 using SistemaDDJ.Web.Infrastructure.Persistence;
 using SistemaDDJ.Web.Modules.Inventario.Data;
+using SistemaDDJ.Web.Modules.Inventario.Features.ActualizarProveedor;
+using SistemaDDJ.Web.Modules.Inventario.Features.CambiarEstadoProveedor;
+using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria;
+using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarProveedor;
 
 namespace SistemaDDJ.Web.Modules.Inventario;
 
@@ -11,5 +15,9 @@ public static class InventarioModule
         services
             .AddModuleDbContext<InventarioDbContext>(connectionString, InventarioDbContext.Schema)
             .AddScoped<RegistrarArticulo.Handler>()
-            .AddScoped<RegistrarCategoria.Handler>();
+            .AddScoped<RegistrarCategoria.Handler>()
+            .AddScoped<RegistrarProveedor.Handler>()
+            .AddScoped<ActualizarProveedor.Handler>()
+            .AddScoped<CambiarEstadoProveedor.Handler>()
+            .AddScoped<ListarProveedores.Handler>();
 }
