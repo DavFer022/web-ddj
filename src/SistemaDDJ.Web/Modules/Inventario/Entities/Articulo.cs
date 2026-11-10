@@ -22,6 +22,7 @@ public sealed class Articulo
     public UnidadMedida Unidad { get; set; }
     public ArticuloTipo Tipo { get; set; }
     public decimal CostoUnitario { get; set; }
+    public decimal StockMinimo { get; set; }
     public bool Activo { get; set; } = true;
     public int CategoriaId { get; set; }
 }

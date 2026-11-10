@@ -59,6 +59,13 @@ namespace SistemaDDJ.Web.Modules.Inventario.Data.Migrations
                         .HasColumnType("character varying(150)")
                         .HasColumnName("nombre");
 
+                    b.Property<decimal>("StockMinimo")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("stock_minimo");
+
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -81,6 +88,8 @@ namespace SistemaDDJ.Web.Modules.Inventario.Data.Migrations
                     b.ToTable("articulo", "inventario", t =>
                         {
                             t.HasCheckConstraint("ck_articulo_costo_unitario", "costo_unitario >= 0");
+
+                            t.HasCheckConstraint("ck_articulo_stock_minimo", "stock_minimo >= 0");
 
                             t.HasCheckConstraint("ck_articulo_tipo", "tipo IN ('PRODUCTO', 'INSUMO')");
 

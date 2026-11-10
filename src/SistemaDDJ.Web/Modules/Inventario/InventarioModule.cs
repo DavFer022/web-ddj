@@ -2,6 +2,7 @@ using SistemaDDJ.Web.Infrastructure.Persistence;
 using SistemaDDJ.Web.Modules.Inventario.Data;
 using SistemaDDJ.Web.Modules.Inventario.Features.ActualizarProveedor;
 using SistemaDDJ.Web.Modules.Inventario.Features.CambiarEstadoProveedor;
+using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarDashboardInventario;
 using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo;
 using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria;
@@ -19,5 +20,6 @@ public static class InventarioModule
             .AddScoped<RegistrarProveedor.Handler>()
             .AddScoped<ActualizarProveedor.Handler>()
             .AddScoped<CambiarEstadoProveedor.Handler>()
-            .AddScoped<ListarProveedores.Handler>();
+            .AddScoped<ListarProveedores.Handler>()
+            .AddScoped<ConsultarDashboardInventario.Handler>();
 }

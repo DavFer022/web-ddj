@@ -51,8 +51,8 @@ Mostrar un resumen separado del inventario de productos de venta y del inventari
 ## 6. Tasks
 
 - [x] Confirmar con el usuario cómo se define el umbral de bajo stock y el trato a artículos inactivos.
-- [ ] **Red:** escribir `DashboardInventarioTests.cs` y comprobar que falla.
-- [ ] Si se aprueba `stock_minimo`, agregar la propiedad, restricción CHECK y migración.
-- [ ] **Green:** implementar `ConsultarDashboardInventario` y registrarlo en `InventarioModule`.
-- [ ] Integrar el dashboard en `/inventario` con vistas separadas para `PRODUCTO` e `INSUMO` y resaltado de alertas.
-- [ ] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, hacer commit (`feat(inventario): HU-06 ...`) en `feature/inventario` y preparar el cierre/PR de la Épica 1 de Inventario cuando HU-04, HU-05 y HU-06 estén validadas.
+- [x] **Red:** escribir `DashboardInventarioTests.cs` y comprobar que falla.
+- [x] Si se aprueba `stock_minimo`, agregar la propiedad, restricción CHECK y migración.
+- [x] **Green:** implementar `ConsultarDashboardInventario` y registrarlo en `InventarioModule`.
+- [x] Integrar el dashboard en `/inventario` con vistas separadas para `PRODUCTO` e `INSUMO` y resaltado de alertas.
+- [x] Ejecutar `dotnet test`, actualizar `HU-IMPLEMENT.md` y `MEMORY.md`, hacer commit (`feat(inventario): HU-06 ...`) en `feature/inventario` y preparar el cierre/PR de la Épica 1 de Inventario cuando HU-04, HU-05 y HU-06 estén validadas. La épica 1 queda completada; el PR se prepara al final del lote.

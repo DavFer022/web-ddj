@@ -24,7 +24,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 ### Épica: Catálogo de artículos, productos, insumos y proveedores
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 #### HU-04: Gestión de categorías y catálogo separado de productos e insumos
 
@@ -53,7 +53,7 @@ Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
 
 #### HU-06: Dashboard resumen de ambos inventarios
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador de la tienda **Quiero** visualizar un resumen separado del stock de productos de venta y del stock de insumos **Para** identificar existencias disponibles, artículos sin stock e insumos críticos para el taller
 

@@ -15,7 +15,8 @@ public static class RegistrarArticulo
         ArticuloTipo Tipo,
         decimal? PrecioVenta = null,
         string? Sku = null,
-        string? Descripcion = null);
+        string? Descripcion = null,
+        decimal StockMinimo = 0);
 
     public sealed record Resultado(int? ArticuloId, IReadOnlyList<string> Errores)
     {
@@ -34,6 +35,7 @@ public static class RegistrarArticulo
             if (codigo.Length is 0 or > 30) errores.Add("El código es obligatorio y puede tener hasta 30 caracteres.");
             if (nombre.Length is 0) errores.Add("El nombre es obligatorio.");
             if (comando.CostoUnitario < 0) errores.Add("El costo unitario no puede ser negativo.");
+            if (comando.StockMinimo < 0) errores.Add("El stock mínimo no puede ser negativo.");
 
             if (!await db.CategoriasArticulo.AnyAsync(c => c.Id == comando.CategoriaId && c.Activo, cancellationToken))
             {
@@ -72,6 +74,7 @@ public static class RegistrarArticulo
                 Unidad = comando.Unidad,
                 Tipo = comando.Tipo,
                 CostoUnitario = comando.CostoUnitario,
+                StockMinimo = comando.StockMinimo,
                 CategoriaId = comando.CategoriaId
             };
             db.Articulos.Add(articulo);

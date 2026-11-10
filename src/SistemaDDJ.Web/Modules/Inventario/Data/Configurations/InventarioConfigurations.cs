@@ -27,6 +27,7 @@ public sealed class ArticuloConfiguration : IEntityTypeConfiguration<Articulo>
         builder.Property(x => x.Unidad).HasConversion<string>().HasMaxLength(30);
         builder.Property(x => x.Tipo).HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.CostoUnitario).HasPrecision(18, 2);
+        builder.Property(x => x.StockMinimo).HasPrecision(18, 3).HasDefaultValue(0m);
         builder.Property(x => x.Activo).HasDefaultValue(true);
         builder.HasOne<CategoriaArticulo>().WithMany().HasForeignKey(x => x.CategoriaId);
 
@@ -35,6 +36,7 @@ public sealed class ArticuloConfiguration : IEntityTypeConfiguration<Articulo>
             t.HasCheckConstraint("ck_articulo_tipo",
                 $"tipo IN ({PersistenceExtensions.SqlValuesOf<ArticuloTipo>()})");
             t.HasCheckConstraint("ck_articulo_costo_unitario", "costo_unitario >= 0");
+            t.HasCheckConstraint("ck_articulo_stock_minimo", "stock_minimo >= 0");
             t.HasCheckConstraint("ck_articulo_unidad",
                 $"unidad IN ({PersistenceExtensions.SqlValuesOf<UnidadMedida>()})");
         });

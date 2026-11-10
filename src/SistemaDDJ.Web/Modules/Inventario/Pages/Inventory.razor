@@ -2,11 +2,13 @@
 @using Microsoft.EntityFrameworkCore
 @using SistemaDDJ.Web.Modules.Inventario.Data
 @using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarDashboardInventario
 @using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo
 @using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria
 @inject InventarioDbContext Db
 @inject RegistrarCategoria.Handler RegistrarCategoriaHandler
 @inject RegistrarArticulo.Handler RegistrarArticuloHandler
+@inject ConsultarDashboardInventario.Handler DashboardHandler
 
 <PageTitle>Inventario | Sistema DD&amp;J</PageTitle>
 
@@ -15,6 +17,101 @@
 <div class="d-flex flex-wrap gap-2 mb-3">
     <a class="btn btn-outline-primary btn-sm" href="/inventario/proveedores">Proveedores</a>
 </div>
+
+<h2>Resumen de inventario</h2>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h5">Productos de venta</h3>
+                <p class="mb-2">Artículos registrados: <strong>@(_dashboard?.Productos.Total ?? 0)</strong></p>
+                <span class="badge bg-danger">Agotados: @(_dashboard?.Productos.Agotados ?? 0)</span>
+                <span class="badge bg-warning text-dark">Bajo stock: @(_dashboard?.Productos.Bajos ?? 0)</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h5">Insumos de taller</h3>
+                <p class="mb-2">Artículos registrados: <strong>@(_dashboard?.Insumos.Total ?? 0)</strong></p>
+                <span class="badge bg-danger">Agotados: @(_dashboard?.Insumos.Agotados ?? 0)</span>
+                <span class="badge bg-warning text-dark">Bajo stock: @(_dashboard?.Insumos.Bajos ?? 0)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+    <div class="btn-group" role="group">
+        <button class="btn btn-sm @(_tipoFiltro is null ? "btn-primary" : "btn-outline-primary")" @onclick="() => CambiarTipoAsync(null)">Todos</button>
+        <button class="btn btn-sm @(_tipoFiltro == ArticuloTipo.PRODUCTO ? "btn-primary" : "btn-outline-primary")" @onclick="() => CambiarTipoAsync(ArticuloTipo.PRODUCTO)">Productos</button>
+        <button class="btn btn-sm @(_tipoFiltro == ArticuloTipo.INSUMO ? "btn-primary" : "btn-outline-primary")" @onclick="() => CambiarTipoAsync(ArticuloTipo.INSUMO)">Insumos</button>
+    </div>
+    <div class="input-group" style="max-width: 22rem;">
+        <input class="form-control form-control-sm" placeholder="Buscar por código o nombre" @bind="_busqueda" @bind:event="oninput" />
+        <button class="btn btn-outline-secondary btn-sm" @onclick="CargarDashboardAsync">Buscar</button>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="soloAlertas" @bind="_soloAlertas" @bind:after="CargarDashboardAsync" />
+        <label class="form-check-label" for="soloAlertas">Solo agotados y bajo stock</label>
+    </div>
+</div>
+
+@if (_dashboard is null)
+{
+    <p class="text-muted">Cargando resumen...</p>
+}
+else if (_dashboard.Articulos.Count == 0)
+{
+    <p class="text-muted">No hay artículos que coincidan con el filtro.</p>
+}
+else
+{
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th>Artículo</th>
+                <th>Tipo</th>
+                <th>Categoría</th>
+                <th class="text-end">Stock</th>
+                <th class="text-end">Mínimo</th>
+                <th>Estado</th>
+                <th>Detalle</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var articulo in _dashboard.Articulos)
+            {
+                <tr class="@ClaseFila(articulo.Estado)">
+                    <td>
+                        <strong>@articulo.Codigo</strong> — @articulo.Nombre
+                        @if (!articulo.Activo)
+                        {
+                            <span class="badge bg-secondary">Inactivo</span>
+                        }
+                    </td>
+                    <td>@articulo.Tipo</td>
+                    <td>@articulo.Categoria</td>
+                    <td class="text-end">@articulo.Stock.ToString("0.###") @articulo.Unidad</td>
+                    <td class="text-end">@articulo.StockMinimo.ToString("0.###")</td>
+                    <td><span class="badge @ClaseBadge(articulo.Estado)">@articulo.Estado</span></td>
+                    <td>
+                        @if (articulo.Tipo == ArticuloTipo.PRODUCTO)
+                        {
+                            <span>@articulo.Sku · @(articulo.PrecioVenta?.ToString("C") ?? "—")</span>
+                        }
+                        else
+                        {
+                            <span>@articulo.DescripcionInsumo</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 <h2>Catálogo de inventario</h2>
 
@@ -78,9 +175,13 @@
                         }
                     </InputSelect>
                 </div>
-                <div class="col-md-4 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="form-label">Costo unitario</label>
                     <InputNumber class="form-control" @bind-Value="_articulo.CostoUnitario" />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">Stock mínimo</label>
+                    <InputNumber class="form-control" @bind-Value="_articulo.StockMinimo" />
                 </div>
                 @if (_articulo.Tipo == ArticuloTipo.PRODUCTO)
                 {
@@ -127,6 +228,7 @@
         public string Nombre { get; set; } = string.Empty;
         public UnidadMedida Unidad { get; set; } = UnidadMedida.UNIDAD;
         public decimal CostoUnitario { get; set; }
+        public decimal StockMinimo { get; set; }
         public string? Sku { get; set; }
         public decimal? PrecioVenta { get; set; }
         public string? Descripcion { get; set; }
@@ -137,8 +239,40 @@
     private List<CategoriaArticulo> _categorias = [];
     private IReadOnlyList<string> _erroresCategoria = [];
     private IReadOnlyList<string> _erroresArticulo = [];
+    private ConsultarDashboardInventario.Resultado? _dashboard;
+    private ArticuloTipo? _tipoFiltro;
+    private string? _busqueda;
+    private bool _soloAlertas;
 
-    protected override async Task OnInitializedAsync() => await CargarCategoriasAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCategoriasAsync();
+        await CargarDashboardAsync();
+    }
+
+    private async Task CargarDashboardAsync() =>
+        _dashboard = await DashboardHandler.HandleAsync(
+            new ConsultarDashboardInventario.Consulta(_tipoFiltro, _busqueda, _soloAlertas));
+
+    private async Task CambiarTipoAsync(ArticuloTipo? tipo)
+    {
+        _tipoFiltro = tipo;
+        await CargarDashboardAsync();
+    }
+
+    private static string ClaseFila(EstadoStock estado) => estado switch
+    {
+        EstadoStock.AGOTADO => "table-danger",
+        EstadoStock.BAJO => "table-warning",
+        _ => string.Empty
+    };
+
+    private static string ClaseBadge(EstadoStock estado) => estado switch
+    {
+        EstadoStock.AGOTADO => "bg-danger",
+        EstadoStock.BAJO => "bg-warning text-dark",
+        _ => "bg-success"
+    };
 
     private async Task CargarCategoriasAsync() =>
         _categorias = await Db.CategoriasArticulo.Where(c => c.Activo).OrderBy(c => c.Nombre).ToListAsync();
@@ -159,7 +293,7 @@
     {
         var comando = new RegistrarArticulo.Command(
             _articulo.Codigo, _articulo.Nombre, _articulo.Unidad, _articulo.CostoUnitario, _articulo.CategoriaId, _articulo.Tipo,
-            _articulo.PrecioVenta, _articulo.Sku, _articulo.Descripcion);
+            _articulo.PrecioVenta, _articulo.Sku, _articulo.Descripcion, _articulo.StockMinimo);
         var resultado = await RegistrarArticuloHandler.HandleAsync(comando);
         _erroresArticulo = resultado.Errores;
         if (resultado.Exitoso)
@@ -169,6 +303,8 @@
             _articulo.Sku = null;
             _articulo.PrecioVenta = null;
             _articulo.Descripcion = null;
+            _articulo.StockMinimo = 0;
+            await CargarDashboardAsync();
         }
     }
 }

@@ -103,6 +103,7 @@ src/SistemaDDJ.Web/
 | articulo | unidad | varchar(30) | Unidad de medida | |
 | articulo | tipo | varchar(20) | `PRODUCTO` o `INSUMO`; debe coincidir con su tabla hija | |
 | articulo | costo_unitario | numeric(18,2) | Costo de referencia, mayor o igual que 0 | |
+| articulo | stock_minimo | numeric(18,3) | Umbral de bajo stock, mayor o igual que 0; por defecto 0 | |
 | articulo | activo | boolean | Baja lógica | |
 | articulo | categoria_id | int FK | Categoría del artículo | → categoria_articulo |
 | producto | articulo_id | int PK, FK | Artículo de venta | → articulo (1:1) |
