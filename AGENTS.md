@@ -46,7 +46,8 @@
 - Pasar las HU seleccionas al archivo `docs/ai/HU/HU-IMPLEMENT.md` para formalizar la implementacion e implementar en la siguiente iteración.
 - Antes de implementar cada HU, crear y ejecutar primero las pruebas de sus reglas y recorridos críticos; seguir Red-Green-Refactor. Priorizar comportamiento de negocio, no una prueba por cada función.
 - Ubicar las pruebas en `tests/SistemaDDJ.Tests`. Las pruebas de integración con PostgreSQL deben usar una base aislada, nunca la base de desarrollo.
-- Crear una branch de Git para cada HU en progreso con el nombre `feature/<nombre-hu>`.
+- Trabajar todas las HU solicitadas en la sesión dentro de una única rama del módulo (`feature/<modulo>`, por ejemplo `feature/inventario`), salvo que el usuario pida explícitamente una rama aparte para una HU (en cuyo caso se fusiona a la rama del módulo al completarse y se elimina la rama hija con `git branch -d`).
+- Hacer un commit al completar y validar cada HU (`feat(<modulo>): HU-XX <resumen>`) antes de iniciar la siguiente.
 - Para cada Epica completada y validada, documentar los cambios en el PR y subirlo a github.
 - Actualizar `docs/ai/MEMORY.md`.
 

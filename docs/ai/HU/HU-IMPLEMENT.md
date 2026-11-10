@@ -13,13 +13,22 @@ reglas:
 
 ## Inventario
 
+Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
+
+- `docs/ai/HU/spec/HU-05-proveedores.md`
+- `docs/ai/HU/spec/HU-06-dashboard-inventario.md`
+- `docs/ai/HU/spec/HU-07-compra-proveedor.md`
+- `docs/ai/HU/spec/HU-08-venta-productos.md`
+- `docs/ai/HU/spec/HU-09-consumo-insumos.md`
+- `docs/ai/HU/spec/HU-10-ajustes-y-mermas.md`
+
 ### Épica: Catálogo de artículos, productos, insumos y proveedores
 
 **Estado:** Pendiente (en análisis)
 
 #### HU-04: Gestión de categorías y catálogo separado de productos e insumos
 
-**Estado:** Completada (rama `feature/hu-04-catalogo-articulos`)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Decisiones acordadas:** código manual y único (se normaliza a mayúsculas); unidad de lista fija (`UNIDAD`, `METRO`, `HOJA`, `ROLLO`, `ML`, `KG`, `LITRO`); SKU manual y único, obligatorio en PRODUCTO; una variante de talla/color es un artículo distinto; incluye pantalla básica en `Modules/Inventario/Pages`.
 
@@ -92,7 +101,7 @@ reglas:
   - Rechaza el movimiento si se intenta consumir un artículo de subtipo `PRODUCTO`.
   - Rechaza el movimiento si la cantidad a consumir supera el stock actual del `INSUMO`.
 
-#### HU-10: Ajustes de inventario, mermas de taller y devoluciones
+#### HU-10: Ajustes de inventario, mermas de taller
 
 **Estado:** Pendiente (en análisis)
 

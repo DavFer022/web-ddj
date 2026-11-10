@@ -7,12 +7,9 @@ descripcion: Memoria a corto plazo del estado actual del proyecto, Maximo ~50 li
 
 ## Estado actual
 
-- Rama `feature/modelo-base-datos`: estructura modular y modelo de datos del MER implementados, sin commit.
-- Módulos: `Acceso`, `Inventario`, `Personalizacion`, `Clientes`, `Notificaciones` en `src/SistemaDDJ.Web/Modules/`. Cada uno con su `DbContext` y esquema PostgreSQL.
-- Base `web_ddj` limpiada y migrada con la estructura nueva (19 tablas en 5 esquemas, 13 FK entre esquemas en `IntegracionDbContext`).
-- Datos de prueba en `DevelopmentDataSeeder` (Development, en una sola transacción, omitido si ya hay usuarios o migraciones pendientes).
-- HU-04 completada en `feature/hu-04-catalogo-articulos` (categorías, artículos producto/insumo, pantalla básica en `/inventario`). Pruebas: 12 pasan, incluidas 10 de catálogo con PostgreSQL aislado (`web_ddj_tests`).
-- Pendientes de Inventario: HU-05 a HU-10 (ver `HU-IMPLEMENT.md`).
+- Rama `feature/inventario`: estructura modular, modelo de datos del MER y HU-04 completada (categorías, artículos producto/insumo, pantalla básica en `/inventario`). Pruebas: 12 pasan, incluidas 10 de catálogo con PostgreSQL aislado (`web_ddj_tests`).
+- Estrategia Git: una sola rama por módulo/lote (`feature/inventario`) con un commit por cada HU completada; ramas por HU solo si se piden explícitamente.
+- Pendientes de Inventario: HU-05 a HU-10 (planes y tasks en `docs/ai/HU/spec/`).
 
 ## Decisiones y por que
 
