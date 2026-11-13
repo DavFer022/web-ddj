@@ -1,3 +1,4 @@
+using MudBlazor.Services;
 using SistemaDDJ.Web.Components;
 using SistemaDDJ.Web.Infrastructure.Persistence;
 using SistemaDDJ.Web.Infrastructure.Persistence.Integracion;
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddMudServices();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))

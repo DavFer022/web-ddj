@@ -1,5 +1,15 @@
 ﻿@page "/not-found"
 @layout MainLayout
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<PageTitle>No encontrado | Sistema DD&amp;J</PageTitle>
+
+<MudPaper Class="pa-8 text-center" Elevation="1">
+    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Warning" />
+    <MudText Typo="Typo.h4" Class="mt-3">Página no encontrada</MudText>
+    <MudText Typo="Typo.body1" Class="mud-text-secondary mb-4">
+        La dirección que buscas no existe o fue movida.
+    </MudText>
+    <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Home">
+        Volver al inicio
+    </MudButton>
+</MudPaper>

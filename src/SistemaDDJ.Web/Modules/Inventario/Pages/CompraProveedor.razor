@@ -1,0 +1,302 @@
+@page "/inventario/compras"
+@using Microsoft.EntityFrameworkCore
+@using SistemaDDJ.Web.Modules.Acceso.PublicApi
+@using SistemaDDJ.Web.Modules.Inventario.Data
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.ListarProveedores
+@using SistemaDDJ.Web.Modules.Inventario.Features.Proveedores
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCompraProveedor
+@inject InventarioDbContext Db
+@inject IAccesoPublicApi Acceso
+@inject ListarProveedores.Handler ListarProveedoresHandler
+@inject RegistrarCompraProveedor.Handler RegistrarCompraHandler
+
+<PageTitle>Compra a proveedor | Sistema DD&amp;J</PageTitle>
+
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
+
+<MudText Typo="Typo.h3" Class="font-weight-bold">Compra a proveedor</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Registra la entrada de productos e insumos desde una misma factura.
+</MudText>
+
+@if (_usuarioActual is null)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        No hay un usuario activo para registrar la compra.
+    </MudAlert>
+}
+else
+{
+    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Class="mb-3"
+             Icon="@Icons.Material.Filled.Person">
+        Registrada por: @_usuarioActual.NombreVisible
+    </MudChip>
+}
+
+@if (!string.IsNullOrWhiteSpace(_mensaje))
+{
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+@if (_errores.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        @foreach (var error in _errores)
+        {
+            <div>@error</div>
+        }
+    </MudAlert>
+}
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudAutocomplete T="ProveedorDto"
+                             @bind-Value="_proveedor"
+                             Label="Proveedor"
+                             Placeholder="Escriba para buscar proveedor..."
+                             SearchFunc="BuscarProveedoresAsync"
+                             ToStringFunc="@(p => p is null ? string.Empty : p.RazonSocial)"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Dense="true"
+                             Clearable="true"
+                             ResetValueOnEmptyText="true"
+                             CoerceText="true"
+                             MaxItems="50" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField T="string" @bind-Value="_referencia" Label="Referencia (factura)"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudTextField T="string" @bind-Value="_notas" Label="Notas"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudText Typo="Typo.h6" Class="mb-2">Líneas de compra</MudText>
+<MudPaper Elevation="1" Class="mb-3">
+    <MudTable T="LineaCompra" Items="_lineas" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Artículo</MudTh>
+            <MudTh>Cantidad</MudTh>
+            <MudTh>Costo unitario</MudTh>
+            <MudTh>Actualizar costo</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Artículo">
+                <MudAutocomplete T="Articulo"
+                                 @bind-Value="context.Articulo"
+                                 @bind-Value:after="() => ActualizarCosto(context)"
+                                 Placeholder="Escriba código o nombre del artículo..."
+                                 SearchFunc="BuscarArticulosAsync"
+                                 ToStringFunc="@(a => a is null ? string.Empty : $"{a.Codigo} — {a.Nombre} ({a.Tipo})")"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Dense="true"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceText="true"
+                                 MaxItems="50" />
+            </MudTd>
+            <MudTd DataLabel="Cantidad">
+                <MudNumericField T="decimal" @bind-Value="context.Cantidad" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd DataLabel="Costo unitario">
+                <MudNumericField T="decimal" @bind-Value="context.CostoUnitario" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd DataLabel="Actualizar costo">
+                <MudCheckBox T="bool" @bind-Value="context.ActualizarCostoReferencia" Label="Último costo"
+                             Dense="true" Color="Color.Primary" />
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Quitar línea" OnClick="() => QuitarLinea(context)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+<MudStack Row="true" Spacing="2" Class="mb-6">
+    <MudButton OnClick="AgregarLinea" Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">Agregar línea</MudButton>
+    <MudButton OnClick="GuardarAsync" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Save" Disabled="@(_usuarioActual is null)">
+        Registrar compra
+    </MudButton>
+</MudStack>
+
+<MudText Typo="Typo.h6" Class="mb-2">Compras realizadas</MudText>
+<MudPaper Elevation="1">
+    <MudTable T="CompraResumen" Items="_compras" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Proveedor</MudTh>
+            <MudTh>Referencia</MudTh>
+            <MudTh>Artículos</MudTh>
+            <MudTh Style="text-align: right;">Total</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Fecha">@context.OcurridoEn.LocalDateTime.ToString("g")</MudTd>
+            <MudTd DataLabel="Proveedor"><strong>@context.Proveedor</strong></MudTd>
+            <MudTd DataLabel="Referencia">@(context.Referencia ?? "—")</MudTd>
+            <MudTd DataLabel="Artículos">@context.ResumenArticulos</MudTd>
+            <MudTd DataLabel="Total" Style="text-align: right;"><strong>@context.Total.ToString("C")</strong></MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Aún no hay compras registradas.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private sealed class LineaCompra
+    {
+        public Articulo? Articulo { get; set; }
+        public int ArticuloId => Articulo?.Id ?? 0;
+        public decimal Cantidad { get; set; }
+        public decimal CostoUnitario { get; set; }
+        public bool ActualizarCostoReferencia { get; set; }
+    }
+
+    private sealed record CompraResumen(
+        Guid Id,
+        DateTimeOffset OcurridoEn,
+        string Proveedor,
+        string? Referencia,
+        string ResumenArticulos,
+        decimal Total);
+
+    private UsuarioDto? _usuarioActual;
+    private IReadOnlyList<ProveedorDto> _proveedores = [];
+    private List<Articulo> _articulos = [];
+    private List<CompraResumen> _compras = [];
+    private List<LineaCompra> _lineas = [new()];
+    private ProveedorDto? _proveedor;
+    private string? _referencia;
+    private string? _notas;
+    private IReadOnlyList<string> _errores = [];
+    private string? _mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuarioActual = await Acceso.ObtenerUsuarioActualAsync();
+        _proveedores = await ListarProveedoresHandler.HandleAsync(new ListarProveedores.Consulta(SoloActivos: true));
+        _articulos = await Db.Articulos.Where(a => a.Activo).OrderBy(a => a.Nombre).ToListAsync();
+        await CargarComprasAsync();
+    }
+
+    private Task<IEnumerable<ProveedorDto>> BuscarProveedoresAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _proveedores
+            : _proveedores.Where(p =>
+                p.RazonSocial.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || (p.IdentificacionFiscal?.Contains(filtro, StringComparison.OrdinalIgnoreCase) ?? false));
+        return Task.FromResult<IEnumerable<ProveedorDto>>(resultado);
+    }
+
+    private Task<IEnumerable<Articulo>> BuscarArticulosAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _articulos
+            : _articulos.Where(a =>
+                a.Codigo.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || a.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<Articulo>>(resultado);
+    }
+
+    private async Task CargarComprasAsync()
+    {
+        var movimientos = await Db.MovimientosInventario
+            .AsNoTracking()
+            .Include(m => m.Detalles)
+            .Where(m => m.Motivo == MotivoMovimientoInventario.COMPRA)
+            .OrderByDescending(m => m.OcurridoEn)
+            .Take(50)
+            .ToListAsync();
+
+        var proveedorIds = movimientos
+            .Where(m => m.ProveedorId.HasValue)
+            .Select(m => m.ProveedorId!.Value)
+            .Distinct()
+            .ToList();
+        var proveedores = await Db.Proveedores
+            .AsNoTracking()
+            .Where(p => proveedorIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, p => p.RazonSocial);
+
+        var articuloIds = movimientos
+            .SelectMany(m => m.Detalles.Select(d => d.ArticuloId))
+            .Distinct()
+            .ToList();
+        var articulos = await Db.Articulos
+            .AsNoTracking()
+            .Where(a => articuloIds.Contains(a.Id))
+            .ToDictionaryAsync(a => a.Id, a => $"{a.Codigo} {a.Nombre}");
+
+        _compras = movimientos.Select(m =>
+        {
+            var proveedorNombre = m.ProveedorId.HasValue && proveedores.TryGetValue(m.ProveedorId.Value, out var razon)
+                ? razon
+                : "—";
+            var resumen = string.Join(", ", m.Detalles.Select(d =>
+            {
+                var nombre = articulos.GetValueOrDefault(d.ArticuloId, $"#{d.ArticuloId}");
+                return $"{d.Cantidad:0.###} × {nombre}";
+            }));
+            var total = m.Detalles.Sum(d => d.Cantidad * (d.CostoUnitario ?? 0m));
+            return new CompraResumen(m.Id, m.OcurridoEn, proveedorNombre, m.Referencia, resumen, total);
+        }).ToList();
+    }
+
+    private void AgregarLinea() => _lineas.Add(new LineaCompra());
+
+    private void QuitarLinea(LineaCompra linea)
+    {
+        _lineas.Remove(linea);
+        if (_lineas.Count == 0) _lineas.Add(new LineaCompra());
+    }
+
+    private void ActualizarCosto(LineaCompra linea)
+    {
+        if (linea.Articulo is not null) linea.CostoUnitario = linea.Articulo.CostoUnitario;
+    }
+
+    private async Task GuardarAsync()
+    {
+        _errores = [];
+        _mensaje = null;
+        if (_usuarioActual is null) return;
+
+        var lineas = _lineas
+            .Where(l => l.ArticuloId != 0 || l.Cantidad != 0 || l.CostoUnitario != 0)
+            .Select(l => new RegistrarCompraProveedor.Linea(
+                l.ArticuloId, l.Cantidad, l.CostoUnitario, l.ActualizarCostoReferencia))
+            .ToList();
+
+        var resultado = await RegistrarCompraHandler.HandleAsync(
+            new RegistrarCompraProveedor.Command(
+                _proveedor?.Id ?? 0, _usuarioActual.Id, _referencia, _notas, lineas));
+
+        _errores = resultado.Errores;
+        if (!resultado.Exitoso) return;
+
+        _mensaje = $"Compra registrada con {lineas.Count} línea(s).";
+        _lineas = [new()];
+        _referencia = null;
+        _notas = null;
+        _articulos = await Db.Articulos.Where(a => a.Activo).OrderBy(a => a.Nombre).ToListAsync();
+        await CargarComprasAsync();
+    }
+}

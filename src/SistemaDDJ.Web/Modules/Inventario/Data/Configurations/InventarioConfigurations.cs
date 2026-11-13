@@ -24,9 +24,10 @@ public sealed class ArticuloConfiguration : IEntityTypeConfiguration<Articulo>
         builder.Property(x => x.Codigo).HasMaxLength(30).IsRequired();
         builder.HasIndex(x => x.Codigo).IsUnique();
         builder.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
-        builder.Property(x => x.Unidad).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Unidad).HasConversion<string>().HasMaxLength(30);
         builder.Property(x => x.Tipo).HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.CostoUnitario).HasPrecision(18, 2);
+        builder.Property(x => x.StockMinimo).HasPrecision(18, 3).HasDefaultValue(0m);
         builder.Property(x => x.Activo).HasDefaultValue(true);
         builder.HasOne<CategoriaArticulo>().WithMany().HasForeignKey(x => x.CategoriaId);
 
@@ -35,6 +36,9 @@ public sealed class ArticuloConfiguration : IEntityTypeConfiguration<Articulo>
             t.HasCheckConstraint("ck_articulo_tipo",
                 $"tipo IN ({PersistenceExtensions.SqlValuesOf<ArticuloTipo>()})");
             t.HasCheckConstraint("ck_articulo_costo_unitario", "costo_unitario >= 0");
+            t.HasCheckConstraint("ck_articulo_stock_minimo", "stock_minimo >= 0");
+            t.HasCheckConstraint("ck_articulo_unidad",
+                $"unidad IN ({PersistenceExtensions.SqlValuesOf<UnidadMedida>()})");
         });
     }
 }
@@ -72,8 +76,22 @@ public sealed class ProveedorConfiguration : IEntityTypeConfiguration<Proveedor>
         builder.Property(x => x.IdentificacionFiscal).HasMaxLength(30);
         builder.HasIndex(x => x.IdentificacionFiscal).IsUnique();
         builder.Property(x => x.Correo).HasMaxLength(255);
-        builder.Property(x => x.Telefono).HasMaxLength(30);
         builder.Property(x => x.Activo).HasDefaultValue(true);
+    }
+}
+
+public sealed class TelefonoProveedorConfiguration : IEntityTypeConfiguration<TelefonoProveedor>
+{
+    public void Configure(EntityTypeBuilder<TelefonoProveedor> builder)
+    {
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Numero).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Etiqueta).HasMaxLength(50);
+        builder.HasIndex(x => new { x.ProveedorId, x.Numero }).IsUnique();
+        builder.HasOne<Proveedor>().WithMany(x => x.Telefonos).HasForeignKey(x => x.ProveedorId);
+
+        builder.ToTable(t =>
+            t.HasCheckConstraint("ck_telefono_proveedor_numero", "btrim(numero) <> ''"));
     }
 }
 
@@ -118,7 +136,7 @@ public sealed class DetalleMovimientoInventarioConfiguration : IEntityTypeConfig
         builder.Property(x => x.Cantidad).HasPrecision(18, 3);
         builder.Property(x => x.CostoUnitario).HasPrecision(18, 2);
         builder.Property(x => x.PrecioUnitario).HasPrecision(18, 2);
-        builder.HasOne<MovimientoInventario>().WithMany().HasForeignKey(x => x.MovimientoId);
+        builder.HasOne<MovimientoInventario>().WithMany(x => x.Detalles).HasForeignKey(x => x.MovimientoId);
         builder.HasOne<Articulo>().WithMany().HasForeignKey(x => x.ArticuloId);
 
         builder.ToTable(t =>

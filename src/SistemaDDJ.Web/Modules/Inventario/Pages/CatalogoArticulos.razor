@@ -1,0 +1,216 @@
+@page "/inventario/catalogo"
+@using Microsoft.EntityFrameworkCore
+@using SistemaDDJ.Web.Modules.Inventario.Data
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarArticulo
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarCategoria
+@inject InventarioDbContext Db
+@inject RegistrarCategoria.Handler RegistrarCategoriaHandler
+@inject RegistrarArticulo.Handler RegistrarArticuloHandler
+
+<PageTitle>Catálogo de inventario | Sistema DD&amp;J</PageTitle>
+
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
+
+<MudText Typo="Typo.h3" Class="font-weight-bold">Catálogo de inventario</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Registra nuevas categorías y da de alta productos de venta o insumos de personalización.
+</MudText>
+
+@if (!string.IsNullOrWhiteSpace(_mensaje))
+{
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+
+<MudGrid>
+    <MudItem xs="12" lg="4">
+        <MudPaper Class="pa-5" Elevation="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6">Nueva categoría</MudText>
+            </MudStack>
+            <MudTextField T="string" @bind-Value="_categoria.Nombre" Label="Nombre" Variant="Variant.Outlined" Class="mb-3" />
+            <MudTextField T="string" @bind-Value="_categoria.Descripcion" Label="Descripción" Variant="Variant.Outlined" Class="mb-3" />
+            <MudButton OnClick="GuardarCategoriaAsync" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save">Guardar categoría</MudButton>
+            @if (_erroresCategoria.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    @foreach (var error in _erroresCategoria)
+                    {
+                        <div>@error</div>
+                    }
+                </MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" lg="8">
+        <MudPaper Class="pa-5" Elevation="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudAvatar Color="Color.Tertiary" Variant="Variant.Filled">
+                    <MudIcon Icon="@Icons.Material.Filled.AddBox" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6">Nuevo artículo</MudText>
+            </MudStack>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="ArticuloTipo" @bind-Value="_articulo.Tipo" Label="Tipo" Variant="Variant.Outlined" Dense="true">
+                        <MudSelectItem T="ArticuloTipo" Value="ArticuloTipo.PRODUCTO">Producto de venta</MudSelectItem>
+                        <MudSelectItem T="ArticuloTipo" Value="ArticuloTipo.INSUMO">Insumo de personalización</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudAutocomplete T="CategoriaArticulo"
+                                     @bind-Value="_articulo.Categoria"
+                                     Label="Categoría"
+                                     Placeholder="Escriba para buscar categoría..."
+                                     SearchFunc="BuscarCategoriasAsync"
+                                     ToStringFunc="@(c => c?.Nombre ?? string.Empty)"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Dense="true"
+                                     Clearable="true"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceText="true"
+                                     MaxItems="50" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" @bind-Value="_articulo.Codigo" Label="Código" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" @bind-Value="_articulo.Nombre" Label="Nombre" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect T="UnidadMedida" @bind-Value="_articulo.Unidad" Label="Unidad" Variant="Variant.Outlined" Dense="true">
+                        @foreach (var unidad in Enum.GetValues<UnidadMedida>())
+                        {
+                            <MudSelectItem T="UnidadMedida" Value="@unidad">@unidad</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal" @bind-Value="_articulo.CostoUnitario" Label="Costo unitario"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal" @bind-Value="_articulo.StockMinimo" Label="Stock mínimo"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                @if (_articulo.Tipo == ArticuloTipo.PRODUCTO)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" @bind-Value="_articulo.Sku" Label="SKU" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField T="decimal?" @bind-Value="_articulo.PrecioVenta" Label="Precio de venta"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12">
+                        <MudTextField T="string" @bind-Value="_articulo.Descripcion" Label="Descripción del insumo"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                }
+            </MudGrid>
+            <MudButton OnClick="GuardarArticuloAsync" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save" Class="mt-4">Guardar artículo</MudButton>
+            @if (_erroresArticulo.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                    @foreach (var error in _erroresArticulo)
+                    {
+                        <div>@error</div>
+                    }
+                </MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private sealed class FormularioCategoria
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+    }
+
+    private sealed class FormularioArticulo
+    {
+        public ArticuloTipo Tipo { get; set; } = ArticuloTipo.PRODUCTO;
+        public CategoriaArticulo? Categoria { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public UnidadMedida Unidad { get; set; } = UnidadMedida.UNIDAD;
+        public decimal CostoUnitario { get; set; }
+        public decimal StockMinimo { get; set; }
+        public string? Sku { get; set; }
+        public decimal? PrecioVenta { get; set; }
+        public string? Descripcion { get; set; }
+    }
+
+    private readonly FormularioCategoria _categoria = new();
+    private readonly FormularioArticulo _articulo = new();
+    private List<CategoriaArticulo> _categorias = [];
+    private IReadOnlyList<string> _erroresCategoria = [];
+    private IReadOnlyList<string> _erroresArticulo = [];
+    private string? _mensaje;
+
+    protected override async Task OnInitializedAsync() => await CargarCategoriasAsync();
+
+    private async Task CargarCategoriasAsync() =>
+        _categorias = await Db.CategoriasArticulo.Where(c => c.Activo).OrderBy(c => c.Nombre).ToListAsync();
+
+    private Task<IEnumerable<CategoriaArticulo>> BuscarCategoriasAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _categorias
+            : _categorias.Where(c => c.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<CategoriaArticulo>>(resultado);
+    }
+
+    private async Task GuardarCategoriaAsync()
+    {
+        _mensaje = null;
+        var resultado = await RegistrarCategoriaHandler.HandleAsync(
+            new RegistrarCategoria.Command(_categoria.Nombre, _categoria.Descripcion));
+        _erroresCategoria = resultado.Errores;
+        if (resultado.Exitoso)
+        {
+            _categoria.Nombre = string.Empty;
+            _categoria.Descripcion = null;
+            await CargarCategoriasAsync();
+            _articulo.Categoria = _categorias.FirstOrDefault(c => c.Id == resultado.CategoriaId);
+            _mensaje = "Categoría registrada.";
+        }
+    }
+
+    private async Task GuardarArticuloAsync()
+    {
+        _mensaje = null;
+        var comando = new RegistrarArticulo.Command(
+            _articulo.Codigo, _articulo.Nombre, _articulo.Unidad, _articulo.CostoUnitario,
+            _articulo.Categoria?.Id ?? 0, _articulo.Tipo, _articulo.PrecioVenta,
+            _articulo.Sku, _articulo.Descripcion, _articulo.StockMinimo);
+        var resultado = await RegistrarArticuloHandler.HandleAsync(comando);
+        _erroresArticulo = resultado.Errores;
+        if (resultado.Exitoso)
+        {
+            _articulo.Codigo = string.Empty;
+            _articulo.Nombre = string.Empty;
+            _articulo.Sku = null;
+            _articulo.PrecioVenta = null;
+            _articulo.Descripcion = null;
+            _articulo.StockMinimo = 0;
+            _mensaje = "Artículo registrado en el catálogo.";
+        }
+    }
+}

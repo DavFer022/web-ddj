@@ -19,9 +19,10 @@ public sealed class Articulo
     public int Id { get; set; }
     public string Codigo { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
-    public string Unidad { get; set; } = string.Empty;
+    public UnidadMedida Unidad { get; set; }
     public ArticuloTipo Tipo { get; set; }
     public decimal CostoUnitario { get; set; }
+    public decimal StockMinimo { get; set; }
     public bool Activo { get; set; } = true;
     public int CategoriaId { get; set; }
 }

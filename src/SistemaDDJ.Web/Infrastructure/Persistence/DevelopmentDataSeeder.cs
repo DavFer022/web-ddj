@@ -71,13 +71,13 @@ public static class DevelopmentDataSeeder
         inventario.CategoriasArticulo.AddRange(ropa, tazas, insumosSublimacion, insumosDtfVinil);
         await inventario.SaveChangesAsync(cancellationToken);
 
-        var franelaM = NuevoArticulo("PRD-001", "Franela blanca M", "unidad", ArticuloTipo.PRODUCTO, 4.50m, ropa.Id);
-        var franelaL = NuevoArticulo("PRD-002", "Franela blanca L", "unidad", ArticuloTipo.PRODUCTO, 4.50m, ropa.Id);
-        var taza = NuevoArticulo("PRD-003", "Taza blanca 11 oz", "unidad", ArticuloTipo.PRODUCTO, 1.20m, tazas.Id);
-        var papelSublimacion = NuevoArticulo("INS-001", "Papel de sublimación A4", "hoja", ArticuloTipo.INSUMO, 0.30m, insumosSublimacion.Id);
-        var tintaSublimacion = NuevoArticulo("INS-002", "Tinta de sublimación cian", "ml", ArticuloTipo.INSUMO, 0.08m, insumosSublimacion.Id);
-        var vinilNegro = NuevoArticulo("INS-003", "Vinil textil negro", "metro", ArticuloTipo.INSUMO, 3.50m, insumosDtfVinil.Id);
-        var peliculaDtf = NuevoArticulo("INS-004", "Película DTF A3", "hoja", ArticuloTipo.INSUMO, 1.20m, insumosDtfVinil.Id);
+        var franelaM = NuevoArticulo("PRD-001", "Franela blanca M", UnidadMedida.UNIDAD, ArticuloTipo.PRODUCTO, 4.50m, ropa.Id, stockMinimo: 5);
+        var franelaL = NuevoArticulo("PRD-002", "Franela blanca L", UnidadMedida.UNIDAD, ArticuloTipo.PRODUCTO, 4.50m, ropa.Id, stockMinimo: 5);
+        var taza = NuevoArticulo("PRD-003", "Taza blanca 11 oz", UnidadMedida.UNIDAD, ArticuloTipo.PRODUCTO, 1.20m, tazas.Id, stockMinimo: 10);
+        var papelSublimacion = NuevoArticulo("INS-001", "Papel de sublimación A4", UnidadMedida.HOJA, ArticuloTipo.INSUMO, 0.30m, insumosSublimacion.Id, stockMinimo: 50);
+        var tintaSublimacion = NuevoArticulo("INS-002", "Tinta de sublimación cian", UnidadMedida.ML, ArticuloTipo.INSUMO, 0.08m, insumosSublimacion.Id, stockMinimo: 100);
+        var vinilNegro = NuevoArticulo("INS-003", "Vinil textil negro", UnidadMedida.METRO, ArticuloTipo.INSUMO, 3.50m, insumosDtfVinil.Id, stockMinimo: 3);
+        var peliculaDtf = NuevoArticulo("INS-004", "Película DTF A3", UnidadMedida.HOJA, ArticuloTipo.INSUMO, 1.20m, insumosDtfVinil.Id, stockMinimo: 100);
         inventario.Articulos.AddRange(franelaM, franelaL, taza, papelSublimacion, tintaSublimacion, vinilNegro, peliculaDtf);
         await inventario.SaveChangesAsync(cancellationToken);
 
@@ -91,8 +91,22 @@ public static class DevelopmentDataSeeder
             new Insumo { ArticuloId = vinilNegro.Id, Descripcion = "Vinil textil para corte y prensado" },
             new Insumo { ArticuloId = peliculaDtf.Id, Descripcion = "Película para transferencia DTF" });
 
-        var textiles = new Proveedor { RazonSocial = "Textiles del Centro C.A.", IdentificacionFiscal = "J-30111222-1", Correo = "ventas@textilescentro.example", Telefono = "0412-5550101" };
-        var sublimacionExpress = new Proveedor { RazonSocial = "Sublimación Express", Telefono = "0414-5550202" };
+        var textiles = new Proveedor
+        {
+            RazonSocial = "Textiles del Centro C.A.",
+            IdentificacionFiscal = "J-30111222-1",
+            Correo = "ventas@textilescentro.example",
+            Telefonos =
+            [
+                new TelefonoProveedor { Numero = "0412-5550101", Etiqueta = "Ventas", EsPrincipal = true },
+                new TelefonoProveedor { Numero = "0414-5550102", Etiqueta = "Administración" }
+            ]
+        };
+        var sublimacionExpress = new Proveedor
+        {
+            RazonSocial = "Sublimación Express",
+            Telefonos = [new TelefonoProveedor { Numero = "0414-5550202", Etiqueta = "Pedidos", EsPrincipal = true }]
+        };
         var proveedorInactivo = new Proveedor { RazonSocial = "Proveedor descontinuado", IdentificacionFiscal = "J-40000000-0", Activo = false };
         inventario.Proveedores.AddRange(textiles, sublimacionExpress, proveedorInactivo);
         await inventario.SaveChangesAsync(cancellationToken);
@@ -188,8 +202,19 @@ public static class DevelopmentDataSeeder
         await transaccion.CommitAsync(cancellationToken);
     }
 
-    private static Articulo NuevoArticulo(string codigo, string nombre, string unidad, ArticuloTipo tipo, decimal costo, int categoriaId) =>
-        new() { Codigo = codigo, Nombre = nombre, Unidad = unidad, Tipo = tipo, CostoUnitario = costo, CategoriaId = categoriaId };
+    private static Articulo NuevoArticulo(
+        string codigo,
+        string nombre,
+        UnidadMedida unidad,
+        ArticuloTipo tipo,
+        decimal costo,
+        int categoriaId,
+        decimal stockMinimo = 0) =>
+        new()
+        {
+            Codigo = codigo, Nombre = nombre, Unidad = unidad, Tipo = tipo, CostoUnitario = costo,
+            StockMinimo = stockMinimo, CategoriaId = categoriaId
+        };
 
     private static MovimientoInventario Movimiento(
         TipoMovimientoInventario tipo, MotivoMovimientoInventario motivo, DateTimeOffset ocurridoEn, int registradoPor,

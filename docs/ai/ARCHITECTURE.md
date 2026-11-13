@@ -28,7 +28,16 @@ src/SistemaDDJ.Web/
       DevelopmentDataSeeder.cs   datos de prueba (solo Development)
       Integracion/               IntegracionDbContext y migraciones de FK entre esquemas
   Components/           shell de la aplicación (layout, rutas, páginas genéricas)
+    Theme/              tema global de MudBlazor
+    Shared/             componentes reutilizables de la interfaz
 ```
+
+## Contratos entre módulos
+
+- `Acceso/PublicApi/IAccesoPublicApi`: valida usuarios activos, roles y expone el usuario actual temporal mientras no exista autenticación.
+- `Clientes/PublicApi/IClientesPublicApi`: consulta clientes activos para ventas y operaciones de otros módulos.
+- `Personalizacion/PublicApi/IPersonalizacionPublicApi`: consulta órdenes existentes, estados que admiten consumo y órdenes abiertas.
+- Los consumidores solo usan estos contratos y nunca inyectan el `DbContext` de otro módulo.
 
 ## Orden de migración
 
@@ -103,6 +112,7 @@ src/SistemaDDJ.Web/
 | articulo | unidad | varchar(30) | Unidad de medida | |
 | articulo | tipo | varchar(20) | `PRODUCTO` o `INSUMO`; debe coincidir con su tabla hija | |
 | articulo | costo_unitario | numeric(18,2) | Costo de referencia, mayor o igual que 0 | |
+| articulo | stock_minimo | numeric(18,3) | Umbral de bajo stock, mayor o igual que 0; por defecto 0 | |
 | articulo | activo | boolean | Baja lógica | |
 | articulo | categoria_id | int FK | Categoría del artículo | → categoria_articulo |
 | producto | articulo_id | int PK, FK | Artículo de venta | → articulo (1:1) |
@@ -112,10 +122,14 @@ src/SistemaDDJ.Web/
 | insumo | descripcion | text | Descripción del insumo | ← detalle_orden_servicio (integración) |
 | proveedor | id | int PK | Identificador del proveedor | ← movimiento_inventario |
 | proveedor | razon_social | varchar(150) | Razón social | |
-| proveedor | identificacion_fiscal | varchar(30) UK | Identificación fiscal (opcional, única) | |
+| proveedor | identificacion_fiscal | varchar(30) UK | Identificación fiscal (opcional, única) | ← telefono_proveedor |
 | proveedor | correo | varchar(255) | Correo (opcional) | |
-| proveedor | telefono | varchar(30) | Teléfono (opcional) | |
 | proveedor | activo | boolean | Baja lógica; no se usa en compras nuevas | |
+| telefono_proveedor | id | int PK | Identificador del teléfono | |
+| telefono_proveedor | proveedor_id | int FK | Proveedor dueño del teléfono | → proveedor |
+| telefono_proveedor | numero | varchar(30) | Número de contacto; único por proveedor | |
+| telefono_proveedor | etiqueta | varchar(50) | Etiqueta opcional (Ventas, Compras, etc.) | |
+| telefono_proveedor | es_principal | boolean | Teléfono principal del proveedor | |
 | movimiento_inventario | id | uuid PK | Identificador del movimiento | ← detalle_movimiento_inventario, movimiento_cuenta_cliente |
 | movimiento_inventario | tipo_movimiento | varchar(20) | `ENTRADA` o `SALIDA` | |
 | movimiento_inventario | motivo | varchar(20) | `COMPRA`, `VENTA`, `CONSUMO`, `MERMA` o `AJUSTE` | |

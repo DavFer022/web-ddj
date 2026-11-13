@@ -20,12 +20,14 @@
 - `Infrastructure/Persistence` contiene solo helpers técnicos compartidos (convenciones de nombres, registro de contextos, integración). No pongas lógica de negocio allí ni crees carpetas `Shared` de negocio.
 - Identificadores: `int` autoincremental para catálogos y tablas de relación. `uuid` (UUIDv7 con `Guid.CreateVersion7()`) solo para `MOVIMIENTO_INVENTARIO`, `CLIENTE`, `ORDEN_SERVICIO`, `MOVIMIENTO_CUENTA_CLIENTE`, `NOTIFICACION` y `MOVIMIENTO_FIDELIDAD_CLIENTE`. Cada FK usa el tipo de la clave que referencia.
 - Las bajas son lógicas (`activo = false`). No borres filas con historial; las FK usan `ON DELETE RESTRICT`.
-- Las páginas actuales de los módulos son placeholders; no asumas que autenticación o lógica de negocio ya están implementadas.
+- Inventario ya tiene UI y lógica funcional; `Acceso`, `Personalizacion` y `Clientes` siguen como placeholders. No asumas que la autenticación está implementada.
+- La UI usa MudBlazor. El tema global vive en `Components/Theme/DdjTheme.cs`; los componentes compartidos van en `Components/Shared`.
 - No guardes contraseñas ni cadenas de conexión reales en archivos versionados; usa .NET User Secrets localmente.
 
 ## Stack y arquitectura
 
 - Blazor y ASP.NET Core sobre .NET 10
+- MudBlazor para la interfaz (tema propio, layout y componentes)
 - PostgreSQL con EF Core Code First, un `DbContext` por módulo
 - Monolito modular; VSA dentro de cada módulo
 
@@ -46,7 +48,8 @@
 - Pasar las HU seleccionas al archivo `docs/ai/HU/HU-IMPLEMENT.md` para formalizar la implementacion e implementar en la siguiente iteración.
 - Antes de implementar cada HU, crear y ejecutar primero las pruebas de sus reglas y recorridos críticos; seguir Red-Green-Refactor. Priorizar comportamiento de negocio, no una prueba por cada función.
 - Ubicar las pruebas en `tests/SistemaDDJ.Tests`. Las pruebas de integración con PostgreSQL deben usar una base aislada, nunca la base de desarrollo.
-- Crear una branch de Git para cada HU en progreso con el nombre `feature/<nombre-hu>`.
+- Trabajar todas las HU solicitadas en la sesión dentro de una única rama del módulo (`feature/<modulo>`, por ejemplo `feature/inventario`), salvo que el usuario pida explícitamente una rama aparte para una HU (en cuyo caso se fusiona a la rama del módulo al completarse y se elimina la rama hija con `git branch -d`).
+- Hacer un commit al completar y validar cada HU (`feat(<modulo>): HU-XX <resumen>`) antes de iniciar la siguiente.
 - Para cada Epica completada y validada, documentar los cambios en el PR y subirlo a github.
 - Actualizar `docs/ai/MEMORY.md`.
 

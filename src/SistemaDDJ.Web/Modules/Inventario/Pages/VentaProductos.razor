@@ -1,0 +1,242 @@
+@page "/inventario/ventas"
+@using Microsoft.EntityFrameworkCore
+@using SistemaDDJ.Web.Modules.Acceso.PublicApi
+@using SistemaDDJ.Web.Modules.Clientes.PublicApi
+@using SistemaDDJ.Web.Modules.Inventario.Data
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarStock
+@using SistemaDDJ.Web.Modules.Inventario.Features.RegistrarVentaProductos
+@inject InventarioDbContext Db
+@inject IAccesoPublicApi Acceso
+@inject IClientesPublicApi Clientes
+@inject RegistrarVentaProductos.Handler RegistrarVentaHandler
+
+<PageTitle>Venta de productos | Sistema DD&amp;J</PageTitle>
+
+<MudButton Href="/inventario" Variant="Variant.Text" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2">
+    Volver a inventario
+</MudButton>
+
+<MudText Typo="Typo.h3" Class="font-weight-bold">Venta de productos</MudText>
+<MudText Typo="Typo.body2" Class="mud-text-secondary mb-4">
+    Descuenta existencias del inventario comercial y guarda el precio aplicado.
+</MudText>
+
+@if (_usuarioActual is null)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        No hay un usuario activo para registrar la venta.
+    </MudAlert>
+}
+else
+{
+    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Class="mb-3"
+             Icon="@Icons.Material.Filled.Person">
+        Registrada por: @_usuarioActual.NombreVisible
+    </MudChip>
+}
+
+@if (!string.IsNullOrWhiteSpace(_mensaje))
+{
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-3">@_mensaje</MudAlert>
+}
+@if (_errores.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+        @foreach (var error in _errores)
+        {
+            <div>@error</div>
+        }
+    </MudAlert>
+}
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudAutocomplete T="ClienteResumenDto"
+                             @bind-Value="_cliente"
+                             Label="Cliente (opcional)"
+                             Placeholder="Escriba para buscar cliente..."
+                             SearchFunc="BuscarClientesAsync"
+                             ToStringFunc="@(c => c is null ? string.Empty : $"{c.Nombre} {c.Apellido}".Trim())"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Dense="true"
+                             Clearable="true"
+                             ResetValueOnEmptyText="true"
+                             CoerceText="true"
+                             MaxItems="50" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudTextField T="string" @bind-Value="_referencia" Label="Referencia"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" md="3" Class="d-flex align-center">
+            <MudCheckBox T="bool" @bind-Value="_esCredito" Label="Venta a crédito"
+                         Dense="true" Color="Color.Warning" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudText Typo="Typo.h6" Class="mb-2">Productos</MudText>
+<MudPaper Elevation="1" Class="mb-3">
+    <MudTable T="LineaVenta" Items="_lineas" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Producto</MudTh>
+            <MudTh Style="text-align: right;">Precio</MudTh>
+            <MudTh Style="text-align: right;">Stock</MudTh>
+            <MudTh>Cantidad</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Producto">
+                <MudAutocomplete T="ProductoOpcion"
+                                 @bind-Value="context.Producto"
+                                 Placeholder="Escriba código, nombre o SKU..."
+                                 SearchFunc="BuscarProductosAsync"
+                                 ToStringFunc="@(p => p is null ? string.Empty : $"{p.Codigo} — {p.Nombre} ({p.Sku})")"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Dense="true"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceText="true"
+                                 MaxItems="50" />
+            </MudTd>
+            <MudTd DataLabel="Precio" Style="text-align: right;">@Precio(context.ArticuloId)</MudTd>
+            <MudTd DataLabel="Stock" Style="text-align: right;">@Stock(context.ArticuloId)</MudTd>
+            <MudTd DataLabel="Cantidad">
+                <MudNumericField T="decimal" @bind-Value="context.Cantidad" Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" Min="0" />
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Quitar línea" OnClick="() => QuitarLinea(context)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+<MudStack Row="true" Spacing="2">
+    <MudButton OnClick="AgregarLinea" Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">Agregar línea</MudButton>
+    <MudButton OnClick="GuardarAsync" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Save" Disabled="@(_usuarioActual is null)">
+        Registrar venta
+    </MudButton>
+</MudStack>
+
+@code {
+    private sealed class LineaVenta
+    {
+        public ProductoOpcion? Producto { get; set; }
+        public int ArticuloId => Producto?.ArticuloId ?? 0;
+        public decimal Cantidad { get; set; }
+    }
+
+    private sealed record ProductoOpcion(
+        int ArticuloId,
+        string Codigo,
+        string Nombre,
+        string Sku,
+        decimal PrecioVenta,
+        decimal Stock);
+
+    private UsuarioDto? _usuarioActual;
+    private IReadOnlyList<ClienteResumenDto> _clientes = [];
+    private List<ProductoOpcion> _productos = [];
+    private ClienteResumenDto? _cliente;
+    private bool _esCredito;
+    private string? _referencia;
+    private List<LineaVenta> _lineas = [new()];
+    private IReadOnlyList<string> _errores = [];
+    private string? _mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuarioActual = await Acceso.ObtenerUsuarioActualAsync();
+        _clientes = await Clientes.ListarActivosAsync();
+        await CargarProductosAsync();
+    }
+
+    private Task<IEnumerable<ClienteResumenDto>> BuscarClientesAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _clientes
+            : _clientes.Where(c =>
+                $"{c.Nombre} {c.Apellido}".Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<ClienteResumenDto>>(resultado);
+    }
+
+    private Task<IEnumerable<ProductoOpcion>> BuscarProductosAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _productos
+            : _productos.Where(p =>
+                p.Codigo.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || p.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || p.Sku.Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<ProductoOpcion>>(resultado);
+    }
+
+    private void AgregarLinea() => _lineas.Add(new LineaVenta());
+
+    private void QuitarLinea(LineaVenta linea)
+    {
+        _lineas.Remove(linea);
+        if (_lineas.Count == 0) _lineas.Add(new LineaVenta());
+    }
+
+    private string Precio(int articuloId) =>
+        _productos.FirstOrDefault(p => p.ArticuloId == articuloId)?.PrecioVenta.ToString("C") ?? "—";
+
+    private string Stock(int articuloId) =>
+        _productos.FirstOrDefault(p => p.ArticuloId == articuloId)?.Stock.ToString("0.###") ?? "—";
+
+    private async Task CargarProductosAsync()
+    {
+        var articulos = await Db.Articulos
+            .Where(a => a.Activo && a.Tipo == ArticuloTipo.PRODUCTO)
+            .OrderBy(a => a.Nombre)
+            .ToListAsync();
+        var ids = articulos.Select(a => a.Id).ToList();
+        var productos = await Db.Productos.Where(p => ids.Contains(p.ArticuloId))
+            .ToDictionaryAsync(p => p.ArticuloId);
+        var saldos = await SaldosInventario.ObtenerSaldosAsync(Db, ids);
+
+        _productos = articulos
+            .Where(a => productos.ContainsKey(a.Id))
+            .Select(a => new ProductoOpcion(
+                a.Id, a.Codigo, a.Nombre, productos[a.Id].Sku,
+                productos[a.Id].PrecioVenta, saldos.GetValueOrDefault(a.Id)))
+            .ToList();
+    }
+
+    private async Task GuardarAsync()
+    {
+        _errores = [];
+        _mensaje = null;
+        if (_usuarioActual is null) return;
+
+        var lineas = _lineas
+            .Where(l => l.ArticuloId != 0 || l.Cantidad != 0)
+            .Select(l => new RegistrarVentaProductos.Linea(l.ArticuloId, l.Cantidad))
+            .ToList();
+
+        var resultado = await RegistrarVentaHandler.HandleAsync(
+            new RegistrarVentaProductos.Command(
+                _usuarioActual.Id, _cliente?.Id, _esCredito, _referencia, null, lineas));
+
+        _errores = resultado.Errores;
+        if (!resultado.Exitoso) return;
+
+        _mensaje = $"Venta registrada con {lineas.Count} línea(s).";
+        _lineas = [new()];
+        _referencia = null;
+        _esCredito = false;
+        await CargarProductosAsync();
+    }
+}

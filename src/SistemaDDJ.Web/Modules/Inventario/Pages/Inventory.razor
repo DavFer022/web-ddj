@@ -1,6 +1,182 @@
 @page "/inventario"
+@using SistemaDDJ.Web.Modules.Inventario.Entities
+@using SistemaDDJ.Web.Modules.Inventario.Features.ConsultarDashboardInventario
+@inject ConsultarDashboardInventario.Handler DashboardHandler
 
 <PageTitle>Inventario | Sistema DD&amp;J</PageTitle>
 
-<h1>Inventario</h1>
-<p>Módulo de inventario pendiente de implementar.</p>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-4 flex-wrap gap-3">
+    <div>
+        <MudText Typo="Typo.h3" Class="font-weight-bold">Inventario</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+            Resumen de existencias y catálogo de productos de venta e insumos de taller.
+        </MudText>
+    </div>
+
+</MudStack>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" md="6">
+        <MudPaper Class="metric-card pa-4" Elevation="1">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.overline" Class="mud-text-secondary">Productos de venta</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">@(_dashboard?.Productos.Total ?? 0)</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">artículos registrados</MudText>
+                </div>
+                <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+                </MudAvatar>
+            </MudStack>
+            <MudDivider Class="my-3" />
+            <MudStack Row="true" Spacing="2">
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">
+                    Agotados: @(_dashboard?.Productos.Agotados ?? 0)
+                </MudChip>
+                <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Small">
+                    Bajo stock: @(_dashboard?.Productos.Bajos ?? 0)
+                </MudChip>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="metric-card metric-success pa-4" Elevation="1">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.overline" Class="mud-text-secondary">Insumos de taller</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold">@(_dashboard?.Insumos.Total ?? 0)</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">artículos registrados</MudText>
+                </div>
+                <MudAvatar Color="Color.Tertiary" Variant="Variant.Filled" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Brush" />
+                </MudAvatar>
+            </MudStack>
+            <MudDivider Class="my-3" />
+            <MudStack Row="true" Spacing="2">
+                <MudChip T="string" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small">
+                    Agotados: @(_dashboard?.Insumos.Agotados ?? 0)
+                </MudChip>
+                <MudChip T="string" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Small">
+                    Bajo stock: @(_dashboard?.Insumos.Bajos ?? 0)
+                </MudChip>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudPaper Outlined="true" Class="pa-4 mb-4" Elevation="0">
+    <div class="d-flex flex-wrap align-center gap-3">
+        <div class="d-flex gap-1">
+            <MudButton Size="Size.Small" Variant="@(_tipoFiltro is null ? Variant.Filled : Variant.Outlined)"
+                       Color="@(_tipoFiltro is null ? Color.Primary : Color.Default)"
+                       OnClick="() => CambiarTipoAsync(null)">Todos</MudButton>
+            <MudButton Size="Size.Small" Variant="@(_tipoFiltro == ArticuloTipo.PRODUCTO ? Variant.Filled : Variant.Outlined)"
+                       Color="@(_tipoFiltro == ArticuloTipo.PRODUCTO ? Color.Primary : Color.Default)"
+                       OnClick="() => CambiarTipoAsync(ArticuloTipo.PRODUCTO)">Productos</MudButton>
+            <MudButton Size="Size.Small" Variant="@(_tipoFiltro == ArticuloTipo.INSUMO ? Variant.Filled : Variant.Outlined)"
+                       Color="@(_tipoFiltro == ArticuloTipo.INSUMO ? Color.Primary : Color.Default)"
+                       OnClick="() => CambiarTipoAsync(ArticuloTipo.INSUMO)">Insumos</MudButton>
+        </div>
+        <MudTextField T="string"
+                      @bind-Value="_busqueda"
+                      Placeholder="Buscar por código o nombre"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Class="flex-grow-1"
+                      Style="min-width: 220px; max-width: 380px;" />
+        <MudButton OnClick="CargarDashboardAsync" Variant="Variant.Filled" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.Search">Buscar</MudButton>
+        <MudCheckBox T="bool" @bind-Value="_soloAlertas" Label="Solo alertas" Dense="true" Color="Color.Warning" />
+        <MudButton OnClick="CargarDashboardAsync" Variant="Variant.Text" Color="Color.Primary"
+                   Size="Size.Small" StartIcon="@Icons.Material.Filled.Refresh">Actualizar</MudButton>
+    </div>
+</MudPaper>
+
+<MudPaper Elevation="1" Class="mb-12">
+    <MudTable T="ConsultarDashboardInventario.ArticuloStockDto"
+              Items="ArticulosDashboard"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Artículo</MudTh>
+            <MudTh>Tipo</MudTh>
+            <MudTh>Categoría</MudTh>
+            <MudTh Style="text-align: right; white-space: nowrap;">Stock</MudTh>
+            <MudTh Style="text-align: right; white-space: nowrap;">Mínimo</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Detalle</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Artículo">
+                <MudText Typo="Typo.body2"><strong>@context.Codigo</strong> — @context.Nombre</MudText>
+                @if (!context.Activo)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Inactivo</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
+            <MudTd DataLabel="Categoría">@context.Categoria</MudTd>
+            <MudTd DataLabel="Stock" Style="text-align: right; white-space: nowrap;">@context.Stock.ToString("0.###") @context.Unidad</MudTd>
+            <MudTd DataLabel="Mínimo" Style="text-align: right; white-space: nowrap;">@context.StockMinimo.ToString("0.###")</MudTd>
+            <MudTd DataLabel="Estado">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="@ColorEstado(context.Estado)">
+                    @context.Estado
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Detalle">
+                @if (context.Tipo == ArticuloTipo.PRODUCTO)
+                {
+                    <span>@context.Sku · @(context.PrecioVenta?.ToString("C") ?? "—")</span>
+                }
+                else
+                {
+                    <span>@context.DescripcionInsumo</span>
+                }
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">No hay artículos que coincidan con el filtro.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+        </LoadingContent>
+    </MudTable>
+</MudPaper>
+
+<MudFab Href="/inventario/catalogo"
+        Color="Color.Primary"
+        StartIcon="@Icons.Material.Filled.Add"
+        Label="Nuevo artículo"
+        Class="sticky-fab" />
+
+@code {
+    private ConsultarDashboardInventario.Resultado? _dashboard;
+    private ArticuloTipo? _tipoFiltro;
+    private string? _busqueda;
+    private bool _soloAlertas;
+
+    private IReadOnlyList<ConsultarDashboardInventario.ArticuloStockDto> ArticulosDashboard =>
+        _dashboard?.Articulos ?? [];
+
+    protected override async Task OnInitializedAsync() => await CargarDashboardAsync();
+
+    private async Task CargarDashboardAsync() =>
+        _dashboard = await DashboardHandler.HandleAsync(
+            new ConsultarDashboardInventario.Consulta(_tipoFiltro, _busqueda, _soloAlertas));
+
+    private async Task CambiarTipoAsync(ArticuloTipo? tipo)
+    {
+        _tipoFiltro = tipo;
+        await CargarDashboardAsync();
+    }
+
+    private static Color ColorEstado(EstadoStock estado) => estado switch
+    {
+        EstadoStock.AGOTADO => Color.Error,
+        EstadoStock.BAJO => Color.Warning,
+        _ => Color.Success
+    };
+}

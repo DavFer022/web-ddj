@@ -1,42 +1,41 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Sistema DD&amp;J</a>
-    </div>
+﻿<div class="px-3 pt-2 pb-4">
+    <MudNavMenu Class="mud-width-full">
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+            Inicio
+        </MudNavLink>
+        <MudNavLink Href="login" Icon="@Icons.Material.Filled.Login">
+            Acceso
+        </MudNavLink>
+
+        <MudNavGroup Title="Inventario" Icon="@Icons.Material.Filled.Inventory" Expanded="true">
+            <MudNavLink Href="inventario" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+                Resumen y catálogo
+            </MudNavLink>
+            <MudNavLink Href="inventario/catalogo" Icon="@Icons.Material.Filled.AddBox">
+                Artículo y categoría
+            </MudNavLink>
+            <MudNavLink Href="inventario/proveedores" Icon="@Icons.Material.Filled.LocalShipping">
+                Proveedores
+            </MudNavLink>
+            <MudNavLink Href="inventario/compras" Icon="@Icons.Material.Filled.AddShoppingCart">
+                Compras
+            </MudNavLink>
+            <MudNavLink Href="inventario/ventas" Icon="@Icons.Material.Filled.PointOfSale">
+                Ventas
+            </MudNavLink>
+            <MudNavLink Href="inventario/consumos" Icon="@Icons.Material.Filled.Build">
+                Consumos
+            </MudNavLink>
+            <MudNavLink Href="inventario/ajustes" Icon="@Icons.Material.Filled.Tune">
+                Ajustes y mermas
+            </MudNavLink>
+        </MudNavGroup>
+
+        <MudNavLink Href="personalizacion" Icon="@Icons.Material.Filled.Brush">
+            Personalización
+        </MudNavLink>
+        <MudNavLink Href="clientes" Icon="@Icons.Material.Filled.People">
+            Clientes (CRM)
+        </MudNavLink>
+    </MudNavMenu>
 </div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                Inicio
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="login">
-                Acceso
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="inventario">
-                Inventario
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="personalizacion">
-                Personalización
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="clientes">
-                Clientes (CRM)
-            </NavLink>
-        </div>
-    </nav>
-</div>
-

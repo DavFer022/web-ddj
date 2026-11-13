@@ -2,5 +2,39 @@
 
 <PageTitle>Acceso | Sistema DD&amp;J</PageTitle>
 
-<h1>Acceso</h1>
-<p>Módulo de inicio de sesión pendiente de implementar.</p>
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-6">
+    <MudPaper Elevation="2" Class="pa-8">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
+            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Login" />
+            </MudAvatar>
+            <MudText Typo="Typo.h4" Class="font-weight-bold">Acceso al sistema</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary text-center">
+                Ingresa con tu usuario para administrar la tienda y el taller.
+            </MudText>
+        </MudStack>
+
+        <MudTextField T="string"
+                      Label="Correo"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Email"
+                      Class="mb-4"
+                      Disabled="true" />
+        <MudTextField T="string"
+                      Label="Contraseña"
+                      Variant="Variant.Outlined"
+                      InputType="InputType.Password"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Lock"
+                      Class="mb-4"
+                      Disabled="true" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" Disabled="true">
+            Iniciar sesión
+        </MudButton>
+
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-5" Dense="true">
+            La autenticación se implementará en la HU-01 de Acceso.
+        </MudAlert>
+    </MudPaper>
+</MudContainer>

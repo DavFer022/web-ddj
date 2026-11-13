@@ -13,13 +13,24 @@ reglas:
 
 ## Inventario
 
+Planes y tasks detallados por HU pendiente en `docs/ai/HU/spec/`:
+
+- `docs/ai/HU/spec/HU-05-proveedores.md`
+- `docs/ai/HU/spec/HU-06-dashboard-inventario.md`
+- `docs/ai/HU/spec/HU-07-compra-proveedor.md`
+- `docs/ai/HU/spec/HU-08-venta-productos.md`
+- `docs/ai/HU/spec/HU-09-consumo-insumos.md`
+- `docs/ai/HU/spec/HU-10-ajustes-y-mermas.md`
+
 ### Épica: Catálogo de artículos, productos, insumos y proveedores
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 #### HU-04: Gestión de categorías y catálogo separado de productos e insumos
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
+
+**Decisiones acordadas:** código manual y único (se normaliza a mayúsculas); unidad de lista fija (`UNIDAD`, `METRO`, `HOJA`, `ROLLO`, `ML`, `KG`, `LITRO`); SKU manual y único, obligatorio en PRODUCTO; una variante de talla/color es un artículo distinto; incluye pantalla básica en `Modules/Inventario/Pages`.
 
 **Como** Ususario trabajador de la tienda **Quiero** registrar categorías (`CATEGORIA_ARTICULO`) y dar de alta artículos diferenciando si son `PRODUCTO` de venta o `INSUMO` de personalización **Para** mantener separados el catálogo comercial y el de taller compartiendo los datos base de `ARTICULO`
 
@@ -31,7 +42,7 @@ reglas:
 
 #### HU-05: Gestión de proveedores y teléfonos de contacto
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar y actualizar proveedores con sus teléfonos de contacto **Para** asociarlos a las compras de mercancía e insumos
 
@@ -42,7 +53,7 @@ reglas:
 
 #### HU-06: Dashboard resumen de ambos inventarios
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador de la tienda **Quiero** visualizar un resumen separado del stock de productos de venta y del stock de insumos **Para** identificar existencias disponibles, artículos sin stock e insumos críticos para el taller
 
@@ -53,11 +64,11 @@ reglas:
 
 ### Épica: Movimientos de inventario y casos especiales
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 #### HU-07: Entrada de inventario por compra a proveedor
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar una compra de proveedor que pueda incluir productos de venta, insumos o ambos en un mismo movimiento **Para** incrementar el stock y guardar el costo real pagado en esa compra
 
@@ -69,7 +80,7 @@ reglas:
 
 #### HU-08: Salida de inventario por venta de productos
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar la salida por venta de productos al público **Para** descontar existencias del inventario comercial y conservar el precio de venta aplicado
 
@@ -81,7 +92,7 @@ reglas:
 
 #### HU-09: Salida de inventario por consumo de insumos en una orden de servicio
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador **Quiero** registrar los insumos consumidos asociándolos a una orden de servicio **Para** descontar del inventario de taller exactamente lo utilizado en cada pedido
 
@@ -90,9 +101,9 @@ reglas:
   - Rechaza el movimiento si se intenta consumir un artículo de subtipo `PRODUCTO`.
   - Rechaza el movimiento si la cantidad a consumir supera el stock actual del `INSUMO`.
 
-#### HU-10: Ajustes de inventario, mermas de taller y devoluciones
+#### HU-10: Ajustes de inventario, mermas de taller
 
-**Estado:** Pendiente (en análisis)
+**Estado:** Completada (rama `feature/inventario`)
 
 **Como** Usuario trabajador de la tienda **Quiero** registrar ajustes de inventario, mermas por pruebas/errores de estampado **Para** cuadrar el stock físico con el sistema dejando constancia del motivo y las notas
 

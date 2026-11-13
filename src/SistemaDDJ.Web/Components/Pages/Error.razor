@@ -1,30 +1,38 @@
 ﻿@page "/Error"
 @using System.Diagnostics
 
-<PageTitle>Error</PageTitle>
+<PageTitle>Error | Sistema DD&amp;J</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<MudPaper Class="pa-8" Elevation="1">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-4">
+        <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" />
+        </MudAvatar>
+        <div>
+            <MudText Typo="Typo.h4">Algo salió mal</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                No se pudo procesar la solicitud.
+            </MudText>
+        </div>
+    </MudStack>
 
-@if (ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
-    </p>
-}
+    @if (ShowRequestId)
+    {
+        <MudText Typo="Typo.body2" Class="mb-3">
+            <strong>Request ID:</strong> <code>@RequestId</code>
+        </MudText>
+    }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+        En Development se muestra el detalle del error. No dejes ese entorno activo en producción.
+    </MudAlert>
 
-@code{
+    <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Class="mt-5" StartIcon="@Icons.Material.Filled.Home">
+        Volver al inicio
+    </MudButton>
+</MudPaper>
+
+@code {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 

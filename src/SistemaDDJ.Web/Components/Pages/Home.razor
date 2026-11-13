@@ -2,8 +2,64 @@
 
 <PageTitle>Inicio | Sistema DD&amp;J</PageTitle>
 
-<h1>Sistema DD&amp;J</h1>
+<MudPaper Class="page-hero mb-6" Elevation="0">
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudText Typo="Typo.overline" Style="letter-spacing: .16em;">TIENDA Y TALLER</MudText>
+            <MudText Typo="Typo.h3" Class="font-weight-bold mb-2">Sistema DD&amp;J</MudText>
+            <MudText Typo="Typo.subtitle1" Class="mb-4" Style="opacity: .9;">
+                Inventario, personalización, clientes y cobros en un solo lugar.
+            </MudText>
+            <MudButton Href="/inventario"
+                       Variant="Variant.Filled"
+                       Color="Color.Secondary"
+                       Size="Size.Large"
+                       StartIcon="@Icons.Material.Filled.Dashboard">
+                Abrir inventario
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" md="4" Class="d-none d-md-flex justify-end">
+            <MudIcon Icon="@Icons.Material.Filled.Storefront" Style="font-size: 8rem; opacity: .28;" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-<p>Base de gestión para la tienda de ropa y personalización.</p>
+<MudText Typo="Typo.h5" Class="mb-3">Módulos del sistema</MudText>
 
-<p>Selecciona un módulo en el menú para comenzar.</p>
+<MudGrid>
+    @foreach (var modulo in _modulos)
+    {
+        <MudItem xs="12" sm="6" lg="3">
+            <MudCard Class="surface-card" Elevation="1">
+                <MudCardContent>
+                    <MudAvatar Color="@modulo.Color" Variant="Variant.Filled" Size="Size.Large" Class="mb-3">
+                        <MudIcon Icon="@modulo.Icono" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h6">@modulo.Titulo</MudText>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary mt-1">@modulo.Descripcion</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="@modulo.Ruta" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">
+                        Abrir
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    private sealed record Modulo(string Titulo, string Descripcion, string Ruta, string Icono, Color Color);
+
+    private readonly Modulo[] _modulos =
+    [
+        new("Inventario", "Stock de productos e insumos, compras, ventas, consumos y ajustes.",
+            "/inventario", Icons.Material.Filled.Inventory, Color.Primary),
+        new("Personalización", "Órdenes de servicio, técnicas y calendario de pedidos.",
+            "/personalizacion", Icons.Material.Filled.Brush, Color.Tertiary),
+        new("Clientes (CRM)", "Ficha integral, cuenta corriente y fidelidad.",
+            "/clientes", Icons.Material.Filled.People, Color.Secondary),
+        new("Acceso", "Inicio de sesión y control de acceso por roles.",
+            "/login", Icons.Material.Filled.Login, Color.Info)
+    ];
+}
