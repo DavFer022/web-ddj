@@ -9,7 +9,7 @@ descripcion: Memoria a corto plazo del estado actual del proyecto, Maximo ~50 li
 
 - Rama `feature/inventario`: HU-04 a HU-10 completadas. Inventario tiene catálogo, proveedores con teléfonos, dashboard de stock, compras, ventas, consumo de insumos y ajustes/mermas.
 - Pruebas: 54 pasan con PostgreSQL aislado (`web_ddj_tests`); las migraciones nuevas también están aplicadas en `web_ddj`.
-- UI migrada a **MudBlazor 9.12.0** con layout, tema propio y tarjetas/tablas/formularios. Rutas: `/inventario` (dashboard + catálogo), `/inventario/proveedores`, `/inventario/compras`, `/inventario/ventas`, `/inventario/consumos` y `/inventario/ajustes`.
+- UI migrada a **MudBlazor 9.12.0** con layout, tema propio y selectores con autocompletado (`MudAutocomplete`). Rutas: `/inventario` (solo dashboard y catálogo con botón FAB sticky), `/inventario/catalogo` (alta de categorías y artículos), `/inventario/proveedores`, `/inventario/compras` (con historial de compras), `/inventario/ventas`, `/inventario/consumos` y `/inventario/ajustes`.
 - Pendiente: preparar el PR/cierre de las dos épicas de Inventario. Los demás módulos siguen con páginas placeholder y sin lógica de negocio.
 
 ## Decisiones y por que

@@ -54,16 +54,19 @@ else
 <MudPaper Class="pa-4 mb-4" Elevation="1">
     <MudGrid>
         <MudItem xs="12" md="6">
-            <MudSelect T="Guid?" @bind-Value="_ordenServicioId" Label="Orden de servicio"
-                       Variant="Variant.Outlined" Margin="Margin.Dense">
-                <MudSelectItem T="Guid?" Value="@((Guid?)null)">Seleccione una orden...</MudSelectItem>
-                @foreach (var orden in _ordenes)
-                {
-                    <MudSelectItem T="Guid?" Value="@((Guid?)orden.Id)">
-                        @orden.NumeroOrden — @orden.Estado — vence @orden.VenceEn.LocalDateTime.ToString("d")
-                    </MudSelectItem>
-                }
-            </MudSelect>
+            <MudAutocomplete T="OrdenServicioResumenDto"
+                             @bind-Value="_orden"
+                             Label="Orden de servicio"
+                             Placeholder="Escriba número o estado de orden..."
+                             SearchFunc="BuscarOrdenesAsync"
+                             ToStringFunc="@(o => o is null ? string.Empty : $"{o.NumeroOrden} — {o.Estado} — vence {o.VenceEn.LocalDateTime:d}")"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Dense="true"
+                             Clearable="true"
+                             ResetValueOnEmptyText="true"
+                             CoerceText="true"
+                             MaxItems="50" />
         </MudItem>
         <MudItem xs="12" md="3">
             <MudTextField T="string" @bind-Value="_referencia" Label="Referencia"
@@ -87,16 +90,18 @@ else
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Insumo">
-                <MudSelect T="int" @bind-Value="context.ArticuloId" Variant="Variant.Outlined"
-                           Margin="Margin.Dense" Dense="true">
-                    <MudSelectItem T="int" Value="0">Seleccione...</MudSelectItem>
-                    @foreach (var opcion in _insumos)
-                    {
-                        <MudSelectItem T="int" Value="@opcion.ArticuloId">
-                            @opcion.Codigo — @opcion.Nombre
-                        </MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="InsumoOpcion"
+                                 @bind-Value="context.Insumo"
+                                 Placeholder="Escriba código o nombre del insumo..."
+                                 SearchFunc="BuscarInsumosAsync"
+                                 ToStringFunc="@(i => i is null ? string.Empty : $"{i.Codigo} — {i.Nombre}")"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Dense="true"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceText="true"
+                                 MaxItems="50" />
             </MudTd>
             <MudTd DataLabel="Stock" Style="text-align: right;">@Stock(context.ArticuloId)</MudTd>
             <MudTd DataLabel="Cantidad">
@@ -123,7 +128,8 @@ else
 @code {
     private sealed class LineaConsumo
     {
-        public int ArticuloId { get; set; }
+        public InsumoOpcion? Insumo { get; set; }
+        public int ArticuloId => Insumo?.ArticuloId ?? 0;
         public decimal Cantidad { get; set; }
     }
 
@@ -132,7 +138,7 @@ else
     private UsuarioDto? _usuarioActual;
     private IReadOnlyList<OrdenServicioResumenDto> _ordenes = [];
     private List<InsumoOpcion> _insumos = [];
-    private Guid? _ordenServicioId;
+    private OrdenServicioResumenDto? _orden;
     private string? _referencia;
     private string? _notas;
     private List<LineaConsumo> _lineas = [new()];
@@ -144,6 +150,28 @@ else
         _usuarioActual = await Acceso.ObtenerUsuarioActualAsync();
         _ordenes = await Personalizacion.ListarAbiertasAsync();
         await CargarInsumosAsync();
+    }
+
+    private Task<IEnumerable<OrdenServicioResumenDto>> BuscarOrdenesAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _ordenes
+            : _ordenes.Where(o =>
+                o.NumeroOrden.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || o.Estado.ToString().Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<OrdenServicioResumenDto>>(resultado);
+    }
+
+    private Task<IEnumerable<InsumoOpcion>> BuscarInsumosAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _insumos
+            : _insumos.Where(i =>
+                i.Codigo.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<InsumoOpcion>>(resultado);
     }
 
     private void AgregarLinea() => _lineas.Add(new LineaConsumo());
@@ -183,7 +211,7 @@ else
 
         var resultado = await RegistrarConsumoHandler.HandleAsync(
             new RegistrarConsumoInsumos.Command(
-                _ordenServicioId ?? Guid.Empty, _usuarioActual.Id, _referencia, _notas, lineas));
+                _orden?.Id ?? Guid.Empty, _usuarioActual.Id, _referencia, _notas, lineas));
 
         _errores = resultado.Errores;
         if (!resultado.Exitoso) return;

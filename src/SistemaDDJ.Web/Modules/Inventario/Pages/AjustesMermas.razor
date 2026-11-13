@@ -80,14 +80,19 @@ else
         @if (_motivo == MotivoMovimientoInventario.MERMA)
         {
             <MudItem xs="12" md="2">
-                <MudSelect T="Guid?" @bind-Value="_ordenServicioId" Label="Orden (opcional)"
-                           Variant="Variant.Outlined" Margin="Margin.Dense">
-                    <MudSelectItem T="Guid?" Value="@((Guid?)null)">Sin orden</MudSelectItem>
-                    @foreach (var orden in _ordenes)
-                    {
-                        <MudSelectItem T="Guid?" Value="@((Guid?)orden.Id)">@orden.NumeroOrden</MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="OrdenServicioResumenDto"
+                                 @bind-Value="_orden"
+                                 Label="Orden (opcional)"
+                                 Placeholder="Buscar orden..."
+                                 SearchFunc="BuscarOrdenesAsync"
+                                 ToStringFunc="@(o => o?.NumeroOrden ?? string.Empty)"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Dense="true"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceText="true"
+                                 MaxItems="50" />
             </MudItem>
         }
     </MudGrid>
@@ -104,16 +109,18 @@ else
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Artículo">
-                <MudSelect T="int" @bind-Value="context.ArticuloId" Variant="Variant.Outlined"
-                           Margin="Margin.Dense" Dense="true">
-                    <MudSelectItem T="int" Value="0">Seleccione...</MudSelectItem>
-                    @foreach (var opcion in ArticulosDisponibles)
-                    {
-                        <MudSelectItem T="int" Value="@opcion.ArticuloId">
-                            @opcion.Codigo — @opcion.Nombre (@opcion.Tipo)
-                        </MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="ArticuloOpcion"
+                                 @bind-Value="context.Articulo"
+                                 Placeholder="Escriba código o nombre del artículo..."
+                                 SearchFunc="BuscarArticulosAsync"
+                                 ToStringFunc="@(a => a is null ? string.Empty : $"{a.Codigo} — {a.Nombre} ({a.Tipo})")"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Dense="true"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceText="true"
+                                 MaxItems="50" />
             </MudTd>
             <MudTd DataLabel="Stock" Style="text-align: right;">@Stock(context.ArticuloId)</MudTd>
             <MudTd DataLabel="Cantidad">
@@ -140,7 +147,8 @@ else
 @code {
     private sealed class LineaMovimiento
     {
-        public int ArticuloId { get; set; }
+        public ArticuloOpcion? Articulo { get; set; }
+        public int ArticuloId => Articulo?.ArticuloId ?? 0;
         public decimal Cantidad { get; set; }
     }
 
@@ -158,7 +166,7 @@ else
     private MotivoMovimientoInventario _motivo = MotivoMovimientoInventario.AJUSTE;
     private string? _notas;
     private string? _referencia;
-    private Guid? _ordenServicioId;
+    private OrdenServicioResumenDto? _orden;
     private List<LineaMovimiento> _lineas = [new()];
     private IReadOnlyList<string> _errores = [];
     private string? _mensaje;
@@ -175,11 +183,33 @@ else
         await CargarArticulosAsync();
     }
 
+    private Task<IEnumerable<OrdenServicioResumenDto>> BuscarOrdenesAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? _ordenes
+            : _ordenes.Where(o =>
+                o.NumeroOrden.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || o.Estado.ToString().Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<IEnumerable<OrdenServicioResumenDto>>(resultado);
+    }
+
+    private Task<IEnumerable<ArticuloOpcion>> BuscarArticulosAsync(string? texto, CancellationToken _)
+    {
+        var filtro = texto?.Trim();
+        var resultado = string.IsNullOrWhiteSpace(filtro)
+            ? ArticulosDisponibles
+            : ArticulosDisponibles.Where(a =>
+                a.Codigo.Contains(filtro, StringComparison.OrdinalIgnoreCase)
+                || a.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(resultado);
+    }
+
     private async Task CambiarMotivoAsync()
     {
         if (_motivo == MotivoMovimientoInventario.AJUSTE)
         {
-            _ordenServicioId = null;
+            _orden = null;
             return;
         }
 
@@ -187,7 +217,7 @@ else
         var permitidos = ArticulosDisponibles.Select(a => a.ArticuloId).ToHashSet();
         foreach (var linea in _lineas.Where(l => l.ArticuloId != 0 && !permitidos.Contains(l.ArticuloId)))
         {
-            linea.ArticuloId = 0;
+            linea.Articulo = null;
         }
 
         await Task.CompletedTask;
@@ -231,7 +261,7 @@ else
         var resultado = await RegistrarAjusteHandler.HandleAsync(
             new RegistrarAjusteOMerma.Command(
                 _tipoMovimiento, _motivo, _notas, _usuarioActual.Id,
-                _ordenServicioId, _referencia, lineas));
+                _orden?.Id, _referencia, lineas));
 
         _errores = resultado.Errores;
         if (!resultado.Exitoso) return;

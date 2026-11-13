@@ -42,10 +42,6 @@ Las notas marcadas con ❗ son casos especiales que requieren un estudio o decis
 
 ---
 
-## Inventario
-
----
-
 ## Servicios de personalización
 
 ### Épica: Técnicas y presupuestación
@@ -168,3 +164,11 @@ Las notas marcadas con ❗ son casos especiales que requieren un estudio o decis
 
 - **Criterios de aceptación:**
   - No se eliminan filas previas de `MOVIMIENTO_FIDELIDAD_CLIENTE`; toda corrección se registra como un nuevo movimiento compensatorio (`variacion_puntos` positivo o negativo) con `motivo` obligatorio y el `registrado_por_usuario_id`.
+
+#### HU: Imprimir reporte en pdf de compras
+
+**Como** trabajador de la tienda **Quiero** poder imprimir un reporte de las compras de productos e insumos realizadas y almacenadas en la bbdd con un formato facil de leer **Para** controlar cuales han sido las compras.
+
+- **Criterios de aceptación:**
+  - Seguir el formato del reporte.
+  - Permitir filtros por rango de fechas

@@ -44,10 +44,11 @@ public sealed class AppSmokeTests
         response.EnsureSuccessStatusCode();
         var html = await response.Content.ReadAsStringAsync();
 
-        Assert.Contains("Catálogo de inventario", html);
+        Assert.Contains("Resumen de existencias y catálogo", html);
     }
 
     [Theory]
+    [InlineData("/inventario/catalogo", "Catálogo de inventario")]
     [InlineData("/inventario/proveedores", "Proveedores")]
     [InlineData("/inventario/compras", "Compra a proveedor")]
     [InlineData("/inventario/ventas", "Venta de productos")]
